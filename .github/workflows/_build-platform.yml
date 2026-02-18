@@ -108,6 +108,29 @@ jobs:
             LLVM_FORK_REF_EFFECTIVE="${{ inputs.llvm_fork_ref_override }}"
           fi
 
+          REQUIRED_PATCH_FILES=(
+            "patches/disable-flang-pch-for-sccache.patch"
+            "patches/wasm32-cross-compilation.patch"
+          )
+          HASH_CMD="sha256sum"
+          if ! command -v sha256sum >/dev/null 2>&1; then
+            HASH_CMD="shasum -a 256"
+          fi
+          patch_hash_rows=""
+          for patch_file in "${REQUIRED_PATCH_FILES[@]}"; do
+            if [ ! -f "$patch_file" ]; then
+              echo "::error::Missing required patch file: $patch_file"
+              exit 1
+            fi
+            patch_hash="$($HASH_CMD "$patch_file" | awk '{print $1}')"
+            patch_hash_rows+="${patch_file}:${patch_hash}"$'\n'
+          done
+          if command -v sha256sum >/dev/null 2>&1; then
+            PATCHES_SIGNATURE="$(printf '%s' "$patch_hash_rows" | sha256sum | awk '{print $1}')"
+          else
+            PATCHES_SIGNATURE="$(printf '%s' "$patch_hash_rows" | shasum -a 256 | awk '{print $1}')"
+          fi
+
           if [ -z "${LLVM_FORK_REPO_EFFECTIVE:-}" ]; then
             echo "::error::LLVM_FORK_REPO is empty (versions.env + overrides)."
             exit 1
@@ -129,6 +152,7 @@ jobs:
           echo "EMSDK_HASH=$EMSDK_HASH" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REPO=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REF=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "PATCHES_SIGNATURE=$PATCHES_SIGNATURE" >> "$GITHUB_ENV"
           echo "PYTHON_FOR_TOOLS=${{ inputs.python_cmd }}" >> "$GITHUB_ENV"
           echo "TIMINGS_FILE=.timings-${{ inputs.platform_id }}.txt" >> "$GITHUB_ENV"
           echo "SCCACHE_STATS_FILE=sccache-stats-${{ inputs.platform_id }}.txt" >> "$GITHUB_ENV"
@@ -176,7 +200,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: llvm-project
-          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}
+          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}-patches-${{ env.PATCHES_SIGNATURE }}
           enableCrossOsArchive: ${{ inputs.enable_cross_os_llvm_cache }}
 
       - name: Clone LLVM source from fork
@@ -191,12 +215,39 @@ jobs:
           fi
           git clone --depth=1 --branch "$LLVM_FORK_REF" "$repo_url" llvm-project
 
+      - name: Apply patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          required_patch_files=(
+            "${GITHUB_WORKSPACE}/patches/disable-flang-pch-for-sccache.patch"
+            "${GITHUB_WORKSPACE}/patches/wasm32-cross-compilation.patch"
+          )
+
+          for patch_file in "${required_patch_files[@]}"; do
+            if [ ! -f "$patch_file" ]; then
+              echo "::error::Missing required patch file: $patch_file"
+              exit 1
+            fi
+
+            patch_name="$(basename "$patch_file")"
+            if git -C llvm-project apply --check "$patch_file"; then
+              echo "Applying $patch_name"
+              git -C llvm-project apply "$patch_file"
+            elif git -C llvm-project apply --reverse --check "$patch_file"; then
+              echo "$patch_name already applied"
+            else
+              echo "::error::Required patch '$patch_name' is neither applicable nor already applied."
+              exit 1
+            fi
+          done
+
       - name: Save LLVM source cache
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: llvm-project
-          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}
+          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}-patches-${{ env.PATCHES_SIGNATURE }}
           enableCrossOsArchive: ${{ inputs.enable_cross_os_llvm_cache }}
 
       - name: Set up Docker Buildx

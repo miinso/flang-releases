@@ -22,6 +22,10 @@ on:
       - 'patches/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   linux-pr-smoke:
     uses: ./.github/workflows/_build-platform.yml

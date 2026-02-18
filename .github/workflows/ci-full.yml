@@ -6,6 +6,10 @@ on:
     - cron: '0 1 * * 2,5'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   build-windows-x86_64:
     uses: ./.github/workflows/_build-platform.yml
