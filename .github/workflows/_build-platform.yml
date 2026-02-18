@@ -1,0 +1,447 @@
+---
+name: _build-platform
+
+on:
+  workflow_call:
+    inputs:
+      platform_id:
+        required: true
+        type: string
+      runner:
+        required: true
+        type: string
+      target_triple:
+        required: true
+        type: string
+      cmake_preset:
+        required: true
+        type: string
+      emsdk_host:
+        required: true
+        type: string
+      emsdk_archive:
+        required: true
+        type: string
+      artifact_format:
+        required: true
+        type: string
+      timeout_minutes:
+        required: false
+        type: number
+        default: 360
+      upload_artifact:
+        required: false
+        type: boolean
+        default: true
+      use_docker:
+        required: false
+        type: boolean
+        default: false
+      needs_msvc:
+        required: false
+        type: boolean
+        default: false
+      enable_cross_os_llvm_cache:
+        required: false
+        type: boolean
+        default: false
+      install_linux_deps:
+        required: false
+        type: boolean
+        default: false
+      python_cmd:
+        required: false
+        type: string
+        default: python3
+      artifact_version:
+        required: false
+        type: string
+        default: ""
+      llvm_version_override:
+        required: false
+        type: string
+        default: ""
+      llvm_fork_repo_override:
+        required: false
+        type: string
+        default: ""
+      llvm_fork_ref_override:
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build:
+    name: build-${{ inputs.platform_id }}
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    permissions:
+      contents: read
+      actions: read
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      TARGET_TRIPLE: ${{ inputs.target_triple }}
+      CMAKE_PRESET: ${{ inputs.cmake_preset }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load version configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          source versions.env
+
+          LLVM_VERSION_EFFECTIVE="${LLVM_VERSION:-}"
+          if [ -n "${{ inputs.llvm_version_override }}" ]; then
+            LLVM_VERSION_EFFECTIVE="${{ inputs.llvm_version_override }}"
+          fi
+
+          LLVM_FORK_REPO_EFFECTIVE="${LLVM_FORK_REPO:-}"
+          if [ -n "${{ inputs.llvm_fork_repo_override }}" ]; then
+            LLVM_FORK_REPO_EFFECTIVE="${{ inputs.llvm_fork_repo_override }}"
+          fi
+
+          LLVM_FORK_REF_EFFECTIVE="${LLVM_FORK_REF:-}"
+          if [ -n "${{ inputs.llvm_fork_ref_override }}" ]; then
+            LLVM_FORK_REF_EFFECTIVE="${{ inputs.llvm_fork_ref_override }}"
+          fi
+
+          if [ -z "${LLVM_FORK_REPO_EFFECTIVE:-}" ]; then
+            echo "::error::LLVM_FORK_REPO is empty (versions.env + overrides)."
+            exit 1
+          fi
+          if [ -z "${LLVM_FORK_REF_EFFECTIVE:-}" ]; then
+            echo "::error::LLVM_FORK_REF is empty (versions.env + overrides)."
+            exit 1
+          fi
+
+          EFFECTIVE_VERSION="$LLVM_VERSION_EFFECTIVE"
+          if [ -n "${{ inputs.artifact_version }}" ]; then
+            EFFECTIVE_VERSION="${{ inputs.artifact_version }}"
+          fi
+
+          echo "LLVM_VERSION=$LLVM_VERSION_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "EFFECTIVE_VERSION=$EFFECTIVE_VERSION" >> "$GITHUB_ENV"
+          echo "SCCACHE_VERSION=$SCCACHE_VERSION" >> "$GITHUB_ENV"
+          echo "NINJA_VERSION=$NINJA_VERSION" >> "$GITHUB_ENV"
+          echo "EMSDK_HASH=$EMSDK_HASH" >> "$GITHUB_ENV"
+          echo "LLVM_FORK_REPO=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "LLVM_FORK_REF=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "PYTHON_FOR_TOOLS=${{ inputs.python_cmd }}" >> "$GITHUB_ENV"
+          echo "TIMINGS_FILE=.timings-${{ inputs.platform_id }}.txt" >> "$GITHUB_ENV"
+          echo "SCCACHE_STATS_FILE=sccache-stats-${{ inputs.platform_id }}.txt" >> "$GITHUB_ENV"
+          echo "METRICS_FILE=ci-metrics-${{ inputs.platform_id }}.json" >> "$GITHUB_ENV"
+          : > ".timings-${{ inputs.platform_id }}.txt"
+
+      - name: Show system information (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "=== System Information ==="
+          uname -a
+          echo "CPU cores: $(getconf _NPROCESSORS_ONLN || true)"
+          echo ""
+          echo "=== Memory Information ==="
+          free -h || true
+          echo ""
+          echo "=== Disk Information ==="
+          df -h
+
+      - name: Show system information (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "=== System Information ==="
+          Write-Host "CPU cores: $([Environment]::ProcessorCount)"
+          Get-CimInstance -ClassName Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
+          Write-Host "`n=== Memory Information ==="
+          $memory = Get-CimInstance -ClassName Win32_ComputerSystem
+          Write-Host "Total Physical Memory: $([math]::Round($memory.TotalPhysicalMemory / 1GB, 2)) GB"
+          Write-Host "`n=== Disk Information ==="
+          Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Used -gt 0} | Select-Object Name, @{Name="Size(GB)";Expression={[math]::Round($_.Used/1GB + $_.Free/1GB, 2)}}, @{Name="Free(GB)";Expression={[math]::Round($_.Free/1GB, 2)}} | Format-Table
+
+      - name: Setup MSVC
+        if: ${{ inputs.needs_msvc }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+        with:
+          version: ${{ env.SCCACHE_VERSION }}
+
+      - name: Restore LLVM source cache
+        id: cache-llvm
+        uses: actions/cache/restore@v4
+        with:
+          path: llvm-project
+          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}
+          enableCrossOsArchive: ${{ inputs.enable_cross_os_llvm_cache }}
+
+      - name: Clone LLVM source from fork
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo_url="https://github.com/${LLVM_FORK_REPO}.git"
+          if ! git ls-remote --exit-code "$repo_url" "$LLVM_FORK_REF" >/dev/null; then
+            echo "::error::LLVM_FORK_REF '$LLVM_FORK_REF' not found in $repo_url"
+            exit 1
+          fi
+          git clone --depth=1 --branch "$LLVM_FORK_REF" "$repo_url" llvm-project
+
+      - name: Save LLVM source cache
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: llvm-project
+          key: llvm-source-${{ env.LLVM_FORK_REPO }}-${{ env.LLVM_FORK_REF }}
+          enableCrossOsArchive: ${{ inputs.enable_cross_os_llvm_cache }}
+
+      - name: Set up Docker Buildx
+        if: ${{ inputs.use_docker }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        if: ${{ inputs.use_docker }}
+        shell: bash
+        run: docker build -t llvm-musl-builder:latest -f docker/llvm-musl-builder/Dockerfile .
+
+      - name: Install Linux host dependencies
+        if: ${{ runner.os == 'Linux' && !inputs.use_docker && inputs.install_linux_deps }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mold ninja-build
+
+      - name: Configure, build and install (Docker)
+        if: ${{ inputs.use_docker }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          docker run --rm \
+            -v "${PWD}:/work" \
+            -v "${HOME}/.cache/sccache:/cache/sccache" \
+            -e SCCACHE_DIR=/cache/sccache \
+            -e ACTIONS_CACHE_SERVICE_V2="${ACTIONS_CACHE_SERVICE_V2}" \
+            -e ACTIONS_RESULTS_URL="${ACTIONS_RESULTS_URL}" \
+            -e ACTIONS_RUNTIME_TOKEN="${ACTIONS_RUNTIME_TOKEN}" \
+            -e SCCACHE_GHA_ENABLED="true" \
+            -e CMAKE_PRESET="${CMAKE_PRESET}" \
+            -e NINJA_VERSION="${NINJA_VERSION}" \
+            -e SCCACHE_STATS_FILE="${SCCACHE_STATS_FILE}" \
+            llvm-musl-builder:latest \
+            /bin/bash -c '
+              set -euo pipefail
+              export CMAKE_C_COMPILER_LAUNCHER=sccache
+              export CMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+              cd /tmp
+              wget -q "https://github.com/ninja-build/ninja/archive/refs/tags/v${NINJA_VERSION}.tar.gz"
+              tar xzf "v${NINJA_VERSION}.tar.gz"
+              cd "ninja-${NINJA_VERSION}"
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+              cmake --build build -j"$(nproc)"
+              cp build/ninja /usr/local/bin/
+              cd /work
+
+              mkdir -p /work/build /work/install
+              cp /work/cmake/CMakePresets.json /work/llvm-project/llvm/
+              cmake --preset "${CMAKE_PRESET}" -S /work/llvm-project/llvm -B /work/build \
+                    -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+                    -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+              ninja -C /work/build runtimes
+              ninja -C /work/build runtimes/install
+              ninja -C /work/build tools/flang/tools/install
+              ninja -C /work/build tools/llvm-nm/install
+              ninja -C /work/build tools/llvm-ar/install
+
+              sccache --show-stats > "/work/${SCCACHE_STATS_FILE}" || true
+              chown -R "$(stat -c %u:%g /work)" /work/build /work/install "/work/${SCCACHE_STATS_FILE}" || true
+            '
+          end="$(date +%s)"
+          echo "configure_build_install=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Configure, build and install (Host)
+        if: ${{ !inputs.use_docker }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          mkdir -p build install
+          cp cmake/CMakePresets.json llvm-project/llvm/
+          cmake --preset "${CMAKE_PRESET}" -S llvm-project/llvm -B build \
+                -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+                -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          ninja -C build runtimes
+          ninja -C build runtimes/install
+          ninja -C build tools/flang/tools/install
+          ninja -C build tools/llvm-nm/install
+          ninja -C build tools/llvm-ar/install
+          end="$(date +%s)"
+          echo "configure_build_install=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Collect sccache stats (Host)
+        if: ${{ !inputs.use_docker }}
+        shell: bash
+        run: |
+          (sccache --show-stats || true) > "$SCCACHE_STATS_FILE"
+
+      - name: Setup Emscripten (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          curl -fsSL "https://storage.googleapis.com/webassembly/emscripten-releases-builds/${{ inputs.emsdk_host }}/${EMSDK_HASH}/${{ inputs.emsdk_archive }}" -o emsdk.tar.xz
+          mkdir -p emsdk
+          tar -xf emsdk.tar.xz -C emsdk --strip-components=1
+          rm -f emsdk.tar.xz
+          echo "$PWD/emsdk/bin" >> "$GITHUB_PATH"
+          echo "$PWD/emsdk/emscripten" >> "$GITHUB_PATH"
+          end="$(date +%s)"
+          echo "setup_emsdk=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Setup Emscripten (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $start = Get-Date
+          $url = "https://storage.googleapis.com/webassembly/emscripten-releases-builds/${{ inputs.emsdk_host }}/${{ env.EMSDK_HASH }}/${{ inputs.emsdk_archive }}"
+          Invoke-WebRequest -Uri $url -OutFile emsdk.zip
+          if (Test-Path emsdk) { Remove-Item -Recurse -Force emsdk }
+          Expand-Archive -Path emsdk.zip -DestinationPath emsdk-tmp
+          Move-Item -Path emsdk-tmp\install -Destination emsdk
+          Remove-Item -Recurse -Force emsdk-tmp
+          Remove-Item -Force emsdk.zip
+          "$PWD\emsdk\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+          "$PWD\emsdk\emscripten" | Out-File -FilePath $env:GITHUB_PATH -Append
+          $end = Get-Date
+          $duration = [int]($end - $start).TotalSeconds
+          "setup_emsdk=$duration" | Out-File -FilePath $env:TIMINGS_FILE -Append
+
+      - name: Test wasm32 cross-compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          emcc --generate-config
+          "${PYTHON_FOR_TOOLS}" scripts/test-wasm32.py --install-dir=./install --build-dir=./build
+          end="$(date +%s)"
+          echo "test_wasm32=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Normalize compiler entrypoints (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          bin_dir="install/bin"
+          if [ -f "$bin_dir/flang" ] && [ ! -f "$bin_dir/flang-new" ]; then
+            ln -sf flang "$bin_dir/flang-new"
+          fi
+          if [ -f "$bin_dir/flang-new" ] && [ ! -f "$bin_dir/flang" ]; then
+            ln -sf flang-new "$bin_dir/flang"
+          fi
+          "$bin_dir/flang" --version >/dev/null
+          "$bin_dir/flang-new" --version >/dev/null
+          end="$(date +%s)"
+          echo "normalize_compiler_bins=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Normalize compiler entrypoints (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $start = Get-Date
+          $binDir = Join-Path $PWD "install\bin"
+          $flang = Join-Path $binDir "flang.exe"
+          $flangNew = Join-Path $binDir "flang-new.exe"
+
+          if ((Test-Path $flang) -and -not (Test-Path $flangNew)) {
+            Copy-Item -Path $flang -Destination $flangNew
+          }
+          if ((Test-Path $flangNew) -and -not (Test-Path $flang)) {
+            Copy-Item -Path $flangNew -Destination $flang
+          }
+
+          if (-not (Test-Path $flang) -or -not (Test-Path $flangNew)) {
+            throw "Expected both flang.exe and flang-new.exe in $binDir"
+          }
+
+          & $flang --version | Out-Null
+          & $flangNew --version | Out-Null
+
+          $end = Get-Date
+          $duration = [int]($end - $start).TotalSeconds
+          "normalize_compiler_bins=$duration" | Out-File -FilePath $env:TIMINGS_FILE -Append
+
+      - name: Package binaries (Unix)
+        if: ${{ inputs.upload_artifact && runner.os != 'Windows' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          package_root="flang+llvm-${EFFECTIVE_VERSION}"
+          mv install "$package_root"
+          package_file="${package_root}-${TARGET_TRIPLE}.${{ inputs.artifact_format }}"
+          tar -czf "$package_file" "$package_root"
+          echo "PACKAGE_FILE=$package_file" >> "$GITHUB_ENV"
+          end="$(date +%s)"
+          echo "package=$((end-start))" >> "$TIMINGS_FILE"
+
+      - name: Package binaries (Windows)
+        if: ${{ inputs.upload_artifact && runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          $start = Get-Date
+          $packageRoot = "flang+llvm-${{ env.EFFECTIVE_VERSION }}"
+          Rename-Item -Path install -NewName $packageRoot
+          $packageFile = "$packageRoot-${{ inputs.target_triple }}.${{ inputs.artifact_format }}"
+          Compress-Archive -Path $packageRoot -DestinationPath $packageFile -Force
+          "PACKAGE_FILE=$packageFile" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $end = Get-Date
+          $duration = [int]($end - $start).TotalSeconds
+          "package=$duration" | Out-File -FilePath $env:TIMINGS_FILE -Append
+
+      - name: Upload package artifact
+        if: ${{ inputs.upload_artifact }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: flang+llvm-${{ env.EFFECTIVE_VERSION }}-${{ inputs.target_triple }}
+          path: ${{ env.PACKAGE_FILE }}
+          retention-days: 30
+
+      - name: Generate CI metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$TIMINGS_FILE" ]; then
+            : > "$TIMINGS_FILE"
+          fi
+          if [ ! -f "$SCCACHE_STATS_FILE" ]; then
+            echo "sccache stats unavailable" > "$SCCACHE_STATS_FILE"
+          fi
+          "${PYTHON_FOR_TOOLS}" scripts/write_ci_metrics.py \
+            --platform-id "${{ inputs.platform_id }}" \
+            --target-triple "${TARGET_TRIPLE}" \
+            --llvm-version "${LLVM_VERSION}" \
+            --run-id "${GITHUB_RUN_ID}" \
+            --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --sha "${GITHUB_SHA}" \
+            --timings-file "${TIMINGS_FILE}" \
+            --sccache-file "${SCCACHE_STATS_FILE}" \
+            --output "${METRICS_FILE}"
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-metrics-${{ inputs.platform_id }}
+          path: |
+            ${{ env.METRICS_FILE }}
+            ${{ env.SCCACHE_STATS_FILE }}
+          retention-days: 30

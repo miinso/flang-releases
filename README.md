@@ -16,6 +16,23 @@ Linux builds are compiled on Alpine (musl libc), producing portable binaries tha
 
 Each release includes `libflang_rt.runtime.wasm32.a` for cross-compiling Fortran to WebAssembly.
 
+## Release Assets
+
+Release artifact naming is stable:
+
+- `flang+llvm-{version}-{target_triple}.tar.gz` (Linux, macOS)
+- `flang+llvm-{version}-{target_triple}.zip` (Windows)
+
+Every release also includes:
+
+- `SHA256SUMS.txt`
+- `release-metadata.json`
+
+Compiler entrypoints are normalized in every archive:
+
+- Unix: `bin/flang` and `bin/flang-new`
+- Windows: `bin/flang.exe` and `bin/flang-new.exe`
+
 ## Usage
 
 Download from [Releases](https://github.com/miinso/flang-releases/releases) and extract.
@@ -75,4 +92,39 @@ Fortran remains widely used in numerical computing, scientific simulation, and o
 
 ## Build
 
-See [`.github/workflows/`](.github/workflows/) for build scripts.
+### CI Topology
+
+- `ci-pr.yml`: lightweight PR validation (Linux x86_64, preset `linux-x86_64`, wasm32 e2e)
+- `ci-full.yml`: full 5-platform builds (scheduled Tue/Fri 01:00 UTC + manual)
+- `release.yml`: release-only workflow, consumes artifacts from `ci-full` run or rebuilds
+
+`release.yml` workflow_dispatch inputs:
+
+- `rebuild` (bool): rebuild all platforms in release run
+- `source_run_id` (string): consume artifacts from a specific `ci-full` run
+- `tag` (string): override release tag
+- `version` (string): single source of version truth for artifact/tag/build (recommended to fill this only)
+- `llvm_fork_repo` (string, advanced): LLVM fork repo override
+- `llvm_fork_ref` (string, advanced): LLVM fork ref override
+- `draft` (bool): draft/public release toggle
+
+When `rebuild=false`, `release.yml` downloads artifacts from an existing successful `ci-full.yml` run (same commit SHA by default, or explicit `source_run_id`).
+When `rebuild=true`, `release.yml` builds from `llvm_fork_repo`/`llvm_fork_ref` (input override or `versions.env`/auto defaults).
+
+All build jobs use `.github/workflows/_build-platform.yml`.
+
+### LLVM Source Policy
+
+LLVM source is pulled from fork, not from upstream `llvm/llvm-project` directly.
+
+- `LLVM_FORK_REPO` and `LLVM_FORK_REF` are defined in `versions.env`
+- CI fails immediately if `LLVM_FORK_REF` is empty
+- Fork ref is expected to include wasm32 patch set already applied
+
+### Automatic LLVM Version Tracking
+
+`llvm-version-watch.yml` runs daily and:
+
+1. Finds latest LLVM patch version in `TRACKED_LLVM_MINOR`
+2. Opens a PR when `versions.env` needs an update
+3. Updates `LLVM_VERSION` and `LLVM_FORK_REF` using `flang-wasm32-llvmorg-{version}` convention

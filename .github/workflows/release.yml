@@ -7,54 +7,273 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
+      rebuild:
+        description: 'Rebuild all platforms before release'
+        required: true
+        default: false
+        type: boolean
+      source_run_id:
+        description: 'Existing ci-full run id to consume artifacts from (used when rebuild=false)'
+        required: false
+        default: ''
       tag:
-        description: 'Tag name to release (e.g., v21.1.3). Leave empty to use versions.env'
+        description: 'Tag name to release (e.g. v21.1.3). Empty -> auto'
         required: false
         default: ''
       version:
-        description: 'Version string for artifact names (e.g., 21.1.3). Leave empty to use versions.env'
+        description: 'Version used for artifact/tag/build (e.g. 21.1.3). Empty -> versions.env LLVM_VERSION (or tag-derived on tag push)'
         required: false
         default: ''
-      rebuild:
-        description: 'Force rebuild? (rebuild all platforms / use existing artifacts)'
-        required: true
-        default: 'false'
-        type: boolean
+      llvm_fork_repo:
+        description: '[Advanced] LLVM fork repo (owner/name) used for rebuild. Empty -> versions.env LLVM_FORK_REPO'
+        required: false
+        default: ''
+      llvm_fork_ref:
+        description: '[Advanced] LLVM fork ref used for rebuild. Empty -> auto (versions.env if same version, else flang-wasm32-llvmorg-{version})'
+        required: false
+        default: ''
       draft:
-        description: 'Create release as draft?'
+        description: 'Create release as draft'
         required: true
-        default: 'true'
+        default: true
         type: boolean
 
 jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      rebuild: ${{ steps.resolve.outputs.rebuild }}
+      version: ${{ steps.resolve.outputs.version }}
+      tag_name: ${{ steps.resolve.outputs.tag_name }}
+      source_run_id: ${{ steps.resolve.outputs.source_run_id }}
+      build_run_id: ${{ steps.resolve.outputs.build_run_id }}
+      draft: ${{ steps.resolve.outputs.draft }}
+      llvm_version: ${{ steps.resolve.outputs.llvm_version }}
+      llvm_fork_repo: ${{ steps.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref: ${{ steps.resolve.outputs.llvm_fork_ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve release inputs
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source versions.env
+
+          REBUILD="false"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.rebuild }}" = "true" ]; then
+            REBUILD="true"
+          fi
+
+          DEFAULT_LLVM_VERSION="${LLVM_VERSION}"
+          VERSION="$DEFAULT_LLVM_VERSION"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION="${VERSION#v}"
+          fi
+          LLVM_VERSION_EFFECTIVE="$VERSION"
+
+          LLVM_FORK_REPO_EFFECTIVE="${LLVM_FORK_REPO:-}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.llvm_fork_repo }}" ]; then
+            LLVM_FORK_REPO_EFFECTIVE="${{ inputs.llvm_fork_repo }}"
+          fi
+
+          LLVM_FORK_REF_EFFECTIVE=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.llvm_fork_ref }}" ]; then
+            LLVM_FORK_REF_EFFECTIVE="${{ inputs.llvm_fork_ref }}"
+          elif [ -n "${LLVM_FORK_REF:-}" ] && [ "$VERSION" = "$DEFAULT_LLVM_VERSION" ]; then
+            LLVM_FORK_REF_EFFECTIVE="${LLVM_FORK_REF}"
+          else
+            LLVM_FORK_REF_EFFECTIVE="flang-wasm32-llvmorg-${VERSION}"
+          fi
+
+          TAG_NAME=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
+            TAG_NAME="${{ inputs.tag }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+          else
+            TAG_NAME="v${VERSION}"
+          fi
+
+          DRAFT="false"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.draft }}" = "true" ]; then
+            DRAFT="true"
+          fi
+
+          SOURCE_RUN_ID=""
+          BUILD_RUN_ID=""
+          if [ "$REBUILD" = "true" ]; then
+            if [ -z "$LLVM_FORK_REPO_EFFECTIVE" ] || [ -z "$LLVM_FORK_REF_EFFECTIVE" ]; then
+              echo "::error::rebuild=true requires llvm_fork_repo/llvm_fork_ref (or versions.env defaults)."
+              exit 1
+            fi
+            SOURCE_RUN_ID="${GITHUB_RUN_ID}"
+            BUILD_RUN_ID="${GITHUB_RUN_ID}"
+          else
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.source_run_id }}" ]; then
+              SOURCE_RUN_ID="${{ inputs.source_run_id }}"
+            else
+              SOURCE_RUN_ID="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci-full.yml/runs?per_page=100&status=completed" --jq '.workflow_runs[] | select(.head_sha=="'"${GITHUB_SHA}"'" and .conclusion=="success") | .id' | head -n1 || true)"
+            fi
+            if [ -z "$SOURCE_RUN_ID" ]; then
+              echo "::error::No successful ci-full run found for commit ${GITHUB_SHA}. Provide source_run_id or run ci-full first."
+              exit 1
+            fi
+            BUILD_RUN_ID="$SOURCE_RUN_ID"
+          fi
+
+          echo "rebuild=$REBUILD" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "source_run_id=$SOURCE_RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "build_run_id=$BUILD_RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "draft=$DRAFT" >> "$GITHUB_OUTPUT"
+          echo "llvm_version=$LLVM_VERSION_EFFECTIVE" >> "$GITHUB_OUTPUT"
+          echo "llvm_fork_repo=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_OUTPUT"
+          echo "llvm_fork_ref=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_OUTPUT"
+
   build-windows-x86_64:
-    if: ${{ github.event.inputs.rebuild == 'true' }}
-    uses: ./.github/workflows/build-windows-x86_64.yml
+    if: ${{ needs.resolve.outputs.rebuild == 'true' }}
+    needs: [resolve]
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: windows-x86_64
+      runner: windows-latest
+      target_triple: x86_64-pc-windows-msvc
+      cmake_preset: windows-x86_64
+      emsdk_host: win
+      emsdk_archive: wasm-binaries.zip
+      artifact_format: zip
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: true
+      enable_cross_os_llvm_cache: true
+      install_linux_deps: false
+      python_cmd: python
+      timeout_minutes: 420
+      artifact_version: ${{ needs.resolve.outputs.version }}
+      llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
+      llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
 
   build-linux-x86_64:
-    if: ${{ github.event.inputs.rebuild == 'true' }}
-    uses: ./.github/workflows/build-linux-x86_64.yml
+    if: ${{ needs.resolve.outputs.rebuild == 'true' }}
+    needs: [resolve]
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: linux-x86_64
+      runner: ubuntu-latest
+      target_triple: x86_64-unknown-linux-gnu
+      cmake_preset: linux-static-x86_64
+      emsdk_host: linux
+      emsdk_archive: wasm-binaries.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: true
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 480
+      artifact_version: ${{ needs.resolve.outputs.version }}
+      llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
+      llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
 
   build-linux-arm64:
-    if: ${{ github.event.inputs.rebuild == 'true' }}
-    uses: ./.github/workflows/build-linux-arm64.yml
+    if: ${{ needs.resolve.outputs.rebuild == 'true' }}
+    needs: [resolve]
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: linux-arm64
+      runner: ubuntu-24.04-arm
+      target_triple: aarch64-unknown-linux-gnu
+      cmake_preset: linux-static-arm64
+      emsdk_host: linux
+      emsdk_archive: wasm-binaries-arm64.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: true
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 480
+      artifact_version: ${{ needs.resolve.outputs.version }}
+      llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
+      llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
 
   build-macos-x86_64:
-    if: ${{ github.event.inputs.rebuild == 'true' }}
-    uses: ./.github/workflows/build-macos-x86_64.yml
+    if: ${{ needs.resolve.outputs.rebuild == 'true' }}
+    needs: [resolve]
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: macos-x86_64
+      runner: macos-15-intel
+      target_triple: x86_64-apple-darwin
+      cmake_preset: macos-x86_64
+      emsdk_host: mac
+      emsdk_archive: wasm-binaries.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 420
+      artifact_version: ${{ needs.resolve.outputs.version }}
+      llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
+      llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
 
   build-macos-arm64:
-    if: ${{ github.event.inputs.rebuild == 'true' }}
-    uses: ./.github/workflows/build-macos-arm64.yml
+    if: ${{ needs.resolve.outputs.rebuild == 'true' }}
+    needs: [resolve]
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: macos-arm64
+      runner: macos-latest
+      target_triple: arm64-apple-darwin
+      cmake_preset: macos-arm64
+      emsdk_host: mac
+      emsdk_archive: wasm-binaries-arm64.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 420
+      artifact_version: ${{ needs.resolve.outputs.version }}
+      llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
+      llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
+      llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build-windows-x86_64, build-linux-x86_64, build-linux-arm64, build-macos-x86_64, build-macos-arm64]
-    # Run if: not rebuilding (use existing artifacts) OR all rebuilds succeeded
-    # Note: !cancelled() needed because skipped jobs count as "not success"
+    needs:
+      - resolve
+      - build-windows-x86_64
+      - build-linux-x86_64
+      - build-linux-arm64
+      - build-macos-x86_64
+      - build-macos-arm64
     if: |
-      !cancelled() && (
-        github.event.inputs.rebuild != 'true' ||
+      !cancelled() && needs.resolve.result == 'success' && (
+        needs.resolve.outputs.rebuild != 'true' ||
         !contains(needs.*.result, 'failure')
       )
     permissions:
@@ -65,93 +284,73 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set release variables
-        id: vars
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-pc-windows-msvc
+          path: artifacts
+          run-id: ${{ needs.resolve.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download Linux x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-unknown-linux-gnu
+          path: artifacts
+          run-id: ${{ needs.resolve.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download Linux arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flang+llvm-${{ needs.resolve.outputs.version }}-aarch64-unknown-linux-gnu
+          path: artifacts
+          run-id: ${{ needs.resolve.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download macOS x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-apple-darwin
+          path: artifacts
+          run-id: ${{ needs.resolve.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download macOS arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: flang+llvm-${{ needs.resolve.outputs.version }}-arm64-apple-darwin
+          path: artifacts
+          run-id: ${{ needs.resolve.outputs.source_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Generate release metadata and checksums
+        shell: bash
         run: |
-          # Load defaults from versions.env
-          source versions.env
+          set -euo pipefail
+          python3 scripts/generate_release_metadata.py \
+            --artifacts-dir artifacts \
+            --version "${{ needs.resolve.outputs.version }}" \
+            --tag-name "${{ needs.resolve.outputs.tag_name }}" \
+            --build-run-id "${{ needs.resolve.outputs.build_run_id }}" \
+            --release-run-id "${GITHUB_RUN_ID}" \
+            --commit-sha "${GITHUB_SHA}" \
+            --rebuild "${{ needs.resolve.outputs.rebuild }}" \
+            --metadata-path artifacts/release-metadata.json \
+            --sha256-path artifacts/SHA256SUMS.txt
 
-          # Use input if provided, otherwise use versions.env, otherwise use git tag
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            VERSION="${LLVM_VERSION}"
-          fi
-
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            TAG_NAME="${{ github.event.inputs.tag }}"
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG_NAME="${{ github.ref_name }}"
-          else
-            TAG_NAME="v${VERSION}"
-          fi
-
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Using TAG_NAME=${TAG_NAME}, VERSION=${VERSION}"
-
-      - name: Download artifacts (from this or previous workflow runs)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.vars.outputs.VERSION }}
-        run: |
-          set -e
-          mkdir -p artifacts
-          names=( \
-            "flang+llvm-${VERSION}-x86_64-pc-windows-msvc" \
-            "flang+llvm-${VERSION}-x86_64-unknown-linux-gnu" \
-            "flang+llvm-${VERSION}-aarch64-unknown-linux-gnu" \
-            "flang+llvm-${VERSION}-x86_64-apple-darwin" \
-            "flang+llvm-${VERSION}-arm64-apple-darwin" \
-          )
-
-          repo="${GITHUB_REPOSITORY}"
-
-          download_artifact() {
-            name="$1"
-            echo "Looking for artifact: $name"
-
-            response_and_code=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${repo}/actions/artifacts?per_page=100")
-            response=$(echo "$response_and_code" | head -n -1)
-            code=$(echo "$response_and_code" | tail -n1)
-
-            if [ "$code" != "200" ]; then
-              echo "Error fetching artifacts for $name: HTTP $code"
-              echo "$response"
-              return
-            fi
-            id=$(echo "$response" | jq -r '.artifacts // [] | .[] | select(.name=="'"$name"'") | .id' | head -n1)
-
-            if [ -z "$id" ] || [ "$id" = "null" ]; then
-              echo "Artifact not found for $name"
-              return
-            fi
-            echo "Found artifact id=$id, downloading..."
-
-            curl -sL -H "Authorization: Bearer ${GITHUB_TOKEN}" -o /tmp/${id}.zip "https://api.github.com/repos/${repo}/actions/artifacts/${id}/zip"
-            unzip -q /tmp/${id}.zip -d ./artifacts/
-          }
-
-          pids=()
-          for name in "${names[@]}"; do
-            download_artifact "$name" &
-            pids+=( $! )
-          done
-
-          for pid in "${pids[@]}"; do
-            wait $pid
-          done
-
-      - name: Create Release
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.vars.outputs.TAG_NAME }}
-          name: flang+llvm-${{ steps.vars.outputs.VERSION }}
-          draft: ${{ github.event.inputs.draft == 'true' }}
+          tag_name: ${{ needs.resolve.outputs.tag_name }}
+          name: flang+llvm-${{ needs.resolve.outputs.version }}
+          draft: ${{ needs.resolve.outputs.draft == 'true' }}
           prerelease: false
           files: |
-            ./artifacts/flang+llvm-${{ steps.vars.outputs.VERSION }}-x86_64-pc-windows-msvc.zip
-            ./artifacts/flang+llvm-${{ steps.vars.outputs.VERSION }}-x86_64-unknown-linux-gnu.tar.gz
-            ./artifacts/flang+llvm-${{ steps.vars.outputs.VERSION }}-aarch64-unknown-linux-gnu.tar.gz
-            ./artifacts/flang+llvm-${{ steps.vars.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
-            ./artifacts/flang+llvm-${{ steps.vars.outputs.VERSION }}-arm64-apple-darwin.tar.gz
+            artifacts/flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-pc-windows-msvc.zip
+            artifacts/flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz
+            artifacts/flang+llvm-${{ needs.resolve.outputs.version }}-aarch64-unknown-linux-gnu.tar.gz
+            artifacts/flang+llvm-${{ needs.resolve.outputs.version }}-x86_64-apple-darwin.tar.gz
+            artifacts/flang+llvm-${{ needs.resolve.outputs.version }}-arm64-apple-darwin.tar.gz
+            artifacts/release-metadata.json
+            artifacts/SHA256SUMS.txt

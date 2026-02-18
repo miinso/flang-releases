@@ -1,0 +1,98 @@
+---
+name: CI Full (all platforms)
+
+on:
+  schedule:
+    - cron: '0 1 * * 2,5'
+  workflow_dispatch:
+
+jobs:
+  build-windows-x86_64:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: windows-x86_64
+      runner: windows-latest
+      target_triple: x86_64-pc-windows-msvc
+      cmake_preset: windows-x86_64
+      emsdk_host: win
+      emsdk_archive: wasm-binaries.zip
+      artifact_format: zip
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: true
+      enable_cross_os_llvm_cache: true
+      install_linux_deps: false
+      python_cmd: python
+      timeout_minutes: 420
+
+  build-linux-x86_64:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: linux-x86_64
+      runner: ubuntu-latest
+      target_triple: x86_64-unknown-linux-gnu
+      cmake_preset: linux-static-x86_64
+      emsdk_host: linux
+      emsdk_archive: wasm-binaries.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: true
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 480
+
+  build-linux-arm64:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: linux-arm64
+      runner: ubuntu-24.04-arm
+      target_triple: aarch64-unknown-linux-gnu
+      cmake_preset: linux-static-arm64
+      emsdk_host: linux
+      emsdk_archive: wasm-binaries-arm64.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: true
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 480
+
+  build-macos-x86_64:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: macos-x86_64
+      runner: macos-15-intel
+      target_triple: x86_64-apple-darwin
+      cmake_preset: macos-x86_64
+      emsdk_host: mac
+      emsdk_archive: wasm-binaries.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 420
+
+  build-macos-arm64:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: macos-arm64
+      runner: macos-latest
+      target_triple: arm64-apple-darwin
+      cmake_preset: macos-arm64
+      emsdk_host: mac
+      emsdk_archive: wasm-binaries-arm64.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: true
+      use_docker: false
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: false
+      python_cmd: python3
+      timeout_minutes: 420

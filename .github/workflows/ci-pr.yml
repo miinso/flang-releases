@@ -1,0 +1,42 @@
+---
+name: CI PR (lightweight)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/**'
+      - 'cmake/**'
+      - 'versions.env'
+      - 'scripts/**'
+      - 'Makefile.wasm32'
+      - 'patches/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/**'
+      - 'cmake/**'
+      - 'versions.env'
+      - 'scripts/**'
+      - 'Makefile.wasm32'
+      - 'patches/**'
+  workflow_dispatch:
+
+jobs:
+  linux-pr-smoke:
+    uses: ./.github/workflows/_build-platform.yml
+    with:
+      platform_id: linux-x86_64-pr
+      runner: ubuntu-latest
+      target_triple: x86_64-unknown-linux-gnu
+      cmake_preset: linux-x86_64
+      emsdk_host: linux
+      emsdk_archive: wasm-binaries.tar.xz
+      artifact_format: tar.gz
+      upload_artifact: false
+      use_docker: false
+      needs_msvc: false
+      enable_cross_os_llvm_cache: false
+      install_linux_deps: true
+      python_cmd: python3
+      timeout_minutes: 300
