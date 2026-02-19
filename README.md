@@ -121,6 +121,16 @@ LLVM source is pulled from fork, not from upstream `llvm/llvm-project` directly.
 - CI fails immediately if `LLVM_FORK_REF` is empty
 - Fork ref is expected to include wasm32 patch set already applied
 
+### EMSDK Selection Policy
+
+EMSDK is selected automatically from `emsdk-llvm-map.json` based on build LLVM major.
+
+- Selector: `scripts/resolve_emsdk_for_llvm.py`
+- Validation: `scripts/check_tool_llvm_major.py --tool llvm-nm`
+- CI fails if downloaded emsdk's `llvm-nm --version` major does not match mapped expectation.
+
+`versions.env` still keeps `EMSDK_VERSION`/`EMSDK_HASH` as fallback metadata, but CI selection is map-driven.
+
 ### Automatic LLVM Version Tracking
 
 `llvm-version-watch.yml` runs daily and:

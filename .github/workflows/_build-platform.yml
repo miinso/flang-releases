@@ -108,6 +108,37 @@ jobs:
             LLVM_FORK_REF_EFFECTIVE="${{ inputs.llvm_fork_ref_override }}"
           fi
 
+          EMSDK_MAP_FILE="emsdk-llvm-map.json"
+          if [ ! -f "$EMSDK_MAP_FILE" ]; then
+            echo "::error::Missing required emsdk mapping file: $EMSDK_MAP_FILE"
+            exit 1
+          fi
+
+          resolver_output="$("${{ inputs.python_cmd }}" scripts/resolve_emsdk_for_llvm.py \
+            --map-file "$EMSDK_MAP_FILE" \
+            --llvm-version "$LLVM_VERSION_EFFECTIVE")"
+
+          EMSDK_VERSION_EFFECTIVE=""
+          EMSDK_HASH_EFFECTIVE=""
+          EMSDK_EXPECTED_LLVM_MAJOR=""
+          while IFS='=' read -r key value; do
+            case "$key" in
+              EMSDK_VERSION) EMSDK_VERSION_EFFECTIVE="$value" ;;
+              EMSDK_HASH) EMSDK_HASH_EFFECTIVE="$value" ;;
+              EMSDK_EXPECTED_LLVM_MAJOR) EMSDK_EXPECTED_LLVM_MAJOR="$value" ;;
+            esac
+          done <<< "$resolver_output"
+
+          if [ -z "${EMSDK_VERSION_EFFECTIVE:-}" ] || [ -z "${EMSDK_HASH_EFFECTIVE:-}" ]; then
+            echo "::error::Failed to resolve emsdk version/hash from $EMSDK_MAP_FILE for LLVM ${LLVM_VERSION_EFFECTIVE}"
+            exit 1
+          fi
+          if [ -z "${EMSDK_EXPECTED_LLVM_MAJOR:-}" ]; then
+            echo "::error::Failed to resolve expected emsdk LLVM major from $EMSDK_MAP_FILE for LLVM ${LLVM_VERSION_EFFECTIVE}"
+            exit 1
+          fi
+          echo "Resolved emsdk ${EMSDK_VERSION_EFFECTIVE} (hash=${EMSDK_HASH_EFFECTIVE}) for LLVM ${LLVM_VERSION_EFFECTIVE}; expected emsdk LLVM major=${EMSDK_EXPECTED_LLVM_MAJOR}"
+
           REQUIRED_PATCH_FILES=(
             "patches/disable-flang-pch-for-sccache.patch"
             "patches/wasm32-cross-compilation.patch"
@@ -149,7 +180,9 @@ jobs:
           echo "EFFECTIVE_VERSION=$EFFECTIVE_VERSION" >> "$GITHUB_ENV"
           echo "SCCACHE_VERSION=$SCCACHE_VERSION" >> "$GITHUB_ENV"
           echo "NINJA_VERSION=$NINJA_VERSION" >> "$GITHUB_ENV"
-          echo "EMSDK_HASH=$EMSDK_HASH" >> "$GITHUB_ENV"
+          echo "EMSDK_VERSION=$EMSDK_VERSION_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "EMSDK_HASH=$EMSDK_HASH_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "EMSDK_EXPECTED_LLVM_MAJOR=$EMSDK_EXPECTED_LLVM_MAJOR" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REPO=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REF=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_ENV"
           echo "PATCHES_SIGNATURE=$PATCHES_SIGNATURE" >> "$GITHUB_ENV"
@@ -374,6 +407,24 @@ jobs:
           $end = Get-Date
           $duration = [int]($end - $start).TotalSeconds
           "setup_emsdk=$duration" | Out-File -FilePath $env:TIMINGS_FILE -Append
+
+      - name: Verify emsdk LLVM major
+        shell: bash
+        run: |
+          set -euo pipefail
+          start="$(date +%s)"
+          llvm_nm_tool="${PWD}/emsdk/bin/llvm-nm"
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            llvm_nm_tool="${PWD}/emsdk/bin/llvm-nm.exe"
+          fi
+          if [ ! -f "$llvm_nm_tool" ]; then
+            llvm_nm_tool="llvm-nm"
+          fi
+          "${PYTHON_FOR_TOOLS}" scripts/check_tool_llvm_major.py \
+            --tool "$llvm_nm_tool" \
+            --expected-major "${EMSDK_EXPECTED_LLVM_MAJOR}"
+          end="$(date +%s)"
+          echo "verify_emsdk_llvm_major=$((end-start))" >> "$TIMINGS_FILE"
 
       - name: Test wasm32 cross-compilation
         shell: bash
