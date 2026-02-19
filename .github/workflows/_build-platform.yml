@@ -69,6 +69,10 @@ on:
         required: false
         type: string
         default: ""
+      patches_dir:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   build:
@@ -139,10 +143,24 @@ jobs:
           fi
           echo "Resolved emsdk ${EMSDK_VERSION_EFFECTIVE} (hash=${EMSDK_HASH_EFFECTIVE}) for LLVM ${LLVM_VERSION_EFFECTIVE}; expected emsdk LLVM major=${EMSDK_EXPECTED_LLVM_MAJOR}"
 
-          REQUIRED_PATCH_FILES=(
-            "patches/disable-flang-pch-for-sccache.patch"
-            "patches/wasm32-cross-compilation.patch"
-          )
+          PATCHES_DIR="${{ inputs.patches_dir }}"
+          if [ -z "$PATCHES_DIR" ]; then
+            llvm_major="${LLVM_VERSION_EFFECTIVE%%.*}"
+            PATCHES_DIR="patches/${llvm_major}"
+          fi
+          if [ ! -d "$PATCHES_DIR" ]; then
+            echo "::error::Patches directory not found: $PATCHES_DIR"
+            exit 1
+          fi
+
+          REQUIRED_PATCH_FILES=()
+          for f in "$PATCHES_DIR"/*.patch; do
+            [ -f "$f" ] && REQUIRED_PATCH_FILES+=("$f")
+          done
+          if [ ${#REQUIRED_PATCH_FILES[@]} -eq 0 ]; then
+            echo "::error::No patch files found in $PATCHES_DIR"
+            exit 1
+          fi
           HASH_CMD="sha256sum"
           if ! command -v sha256sum >/dev/null 2>&1; then
             HASH_CMD="shasum -a 256"
@@ -185,6 +203,7 @@ jobs:
           echo "EMSDK_EXPECTED_LLVM_MAJOR=$EMSDK_EXPECTED_LLVM_MAJOR" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REPO=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REF=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "PATCHES_DIR=$PATCHES_DIR" >> "$GITHUB_ENV"
           echo "PATCHES_SIGNATURE=$PATCHES_SIGNATURE" >> "$GITHUB_ENV"
           echo "PYTHON_FOR_TOOLS=${{ inputs.python_cmd }}" >> "$GITHUB_ENV"
           echo "TIMINGS_FILE=.timings-${{ inputs.platform_id }}.txt" >> "$GITHUB_ENV"
@@ -252,10 +271,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          required_patch_files=(
-            "${GITHUB_WORKSPACE}/patches/disable-flang-pch-for-sccache.patch"
-            "${GITHUB_WORKSPACE}/patches/wasm32-cross-compilation.patch"
-          )
+          patches_dir="${{ inputs.patches_dir }}"
+          if [ -z "$patches_dir" ]; then
+            llvm_major="${LLVM_VERSION%%.*}"
+            patches_dir="patches/${llvm_major}"
+          fi
+
+          required_patch_files=()
+          for f in "${GITHUB_WORKSPACE}/${patches_dir}"/*.patch; do
+            [ -f "$f" ] && required_patch_files+=("$f")
+          done
 
           for patch_file in "${required_patch_files[@]}"; do
             if [ ! -f "$patch_file" ]; then

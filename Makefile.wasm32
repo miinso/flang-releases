@@ -4,8 +4,15 @@ BUILD = $(ROOT)/build
 
 CONFIG_H = $(BUILD)/flang-rt/include/config.h
 
-# RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang/runtime/*.cpp)
-RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang-rt/lib/runtime/*.cpp)
+# auto-detect flang-rt (>=20.x) vs flang/runtime (<=19.x)
+ifneq ($(wildcard $(SOURCE)/flang-rt/lib/runtime/*.cpp),)
+  RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang-rt/lib/runtime/*.cpp)
+  RUNTIME_INCLUDE := -I$(BUILD)/flang-rt/include -I$(SOURCE)/flang-rt/include
+else
+  RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang/runtime/*.cpp)
+  RUNTIME_INCLUDE := -I$(BUILD)/tools/flang/runtime
+endif
+
 RUNTIME_SOURCES += $(SOURCE)/flang/lib/Decimal/decimal-to-binary.cpp
 RUNTIME_SOURCES += $(SOURCE)/flang/lib/Decimal/binary-to-decimal.cpp
 RUNTIME_OBJECTS = $(patsubst $(SOURCE)/%,$(BUILD)/%,$(RUNTIME_SOURCES:.cpp=.o))
@@ -16,9 +23,8 @@ RUNTIME_CXXFLAGS += -fno-exceptions
 RUNTIME_CXXFLAGS += -fno-rtti
 RUNTIME_CXXFLAGS += -DNDEBUG
 
-# RUNTIME_CXXFLAGS += -I$(BUILD)/include -I$(BUILD)/tools/flang/runtime
-RUNTIME_CXXFLAGS += -I$(BUILD)/flang-rt/include
-RUNTIME_CXXFLAGS += -I$(BUILD)/include -I$(SOURCE)/flang-rt/include
+RUNTIME_CXXFLAGS += $(RUNTIME_INCLUDE)
+RUNTIME_CXXFLAGS += -I$(BUILD)/include
 RUNTIME_CXXFLAGS += -I$(SOURCE)/flang/include -I$(SOURCE)/llvm/include
 RUNTIME_CXXFLAGS += -DFLANG_LITTLE_ENDIAN
 RUNTIME_CXXFLAGS += -fPIC -Wno-c++11-narrowing -fvisibility=hidden

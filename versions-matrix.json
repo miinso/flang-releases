@@ -1,0 +1,14 @@
+{
+  "versions": [
+    {
+      "llvm_version": "20.1.8",
+      "tracked_minor": "20.1",
+      "patches_dir": "patches/20"
+    },
+    {
+      "llvm_version": "21.1.8",
+      "tracked_minor": "21.1",
+      "patches_dir": "patches/21"
+    }
+  ]
+}

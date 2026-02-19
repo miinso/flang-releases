@@ -58,6 +58,7 @@ jobs:
       llvm_version: ${{ steps.resolve.outputs.llvm_version }}
       llvm_fork_repo: ${{ steps.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref: ${{ steps.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ steps.resolve.outputs.patches_dir }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -97,7 +98,7 @@ jobs:
           elif [ -n "${LLVM_FORK_REF:-}" ] && [ "$VERSION" = "$DEFAULT_LLVM_VERSION" ]; then
             LLVM_FORK_REF_EFFECTIVE="${LLVM_FORK_REF}"
           else
-            LLVM_FORK_REF_EFFECTIVE="flang-wasm32-llvmorg-${VERSION}"
+            LLVM_FORK_REF_EFFECTIVE="llvmorg-${VERSION}"
           fi
 
           TAG_NAME=""
@@ -136,6 +137,9 @@ jobs:
             BUILD_RUN_ID="$SOURCE_RUN_ID"
           fi
 
+          PATCHES_DIR="patches/${VERSION%%.*}"
+
+          echo "patches_dir=$PATCHES_DIR" >> "$GITHUB_OUTPUT"
           echo "rebuild=$REBUILD" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
@@ -169,6 +173,7 @@ jobs:
       llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
       llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ needs.resolve.outputs.patches_dir }}
 
   build-linux-x86_64:
     if: ${{ needs.resolve.outputs.rebuild == 'true' }}
@@ -193,6 +198,7 @@ jobs:
       llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
       llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ needs.resolve.outputs.patches_dir }}
 
   build-linux-arm64:
     if: ${{ needs.resolve.outputs.rebuild == 'true' }}
@@ -217,6 +223,7 @@ jobs:
       llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
       llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ needs.resolve.outputs.patches_dir }}
 
   build-macos-x86_64:
     if: ${{ needs.resolve.outputs.rebuild == 'true' }}
@@ -241,6 +248,7 @@ jobs:
       llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
       llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ needs.resolve.outputs.patches_dir }}
 
   build-macos-arm64:
     if: ${{ needs.resolve.outputs.rebuild == 'true' }}
@@ -265,6 +273,7 @@ jobs:
       llvm_version_override: ${{ needs.resolve.outputs.llvm_version }}
       llvm_fork_repo_override: ${{ needs.resolve.outputs.llvm_fork_repo }}
       llvm_fork_ref_override: ${{ needs.resolve.outputs.llvm_fork_ref }}
+      patches_dir: ${{ needs.resolve.outputs.patches_dir }}
 
   create-release:
     runs-on: ubuntu-latest
