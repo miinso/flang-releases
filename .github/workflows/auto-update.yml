@@ -1,0 +1,111 @@
+---
+name: Auto Update LLVM
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      any_update: ${{ steps.check.outputs.any_update }}
+      updates_json: ${{ steps.check.outputs.updates_json }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check all tracked LLVM minors
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_llvm_updates.py \
+            --multi \
+            --matrix-file versions-matrix.json \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Update matrix and create PRs
+        if: steps.check.outputs.any_update == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          updates='${{ steps.check.outputs.updates_json }}'
+
+          echo "$updates" | python3 -c "
+          import sys, json
+          for u in json.load(sys.stdin):
+              if u['needs_update']:
+                  print(f\"{u['tracked_minor']}|{u['current_version']}|{u['latest_version']}|{u['patches_dir']}\")
+          " | while IFS='|' read -r minor current latest patches_dir; do
+            echo "=== Update: ${minor} ${current} -> ${latest} ==="
+            branch="automation/llvm-${latest}"
+
+            # check if PR already exists
+            existing="$(gh pr list --head "$branch" --json number -q '.[0].number' 2>/dev/null || true)"
+            if [ -n "$existing" ]; then
+              echo "PR #${existing} already exists for $branch, skipping"
+              continue
+            fi
+
+            # create branch and update
+            git checkout -B "$branch" origin/master
+
+            python3 scripts/check_llvm_updates.py \
+              --multi \
+              --matrix-file versions-matrix.json \
+              --write
+
+            # also update versions.env if this is the primary (highest) tracked minor
+            primary_minor="$(python3 -c "
+            import json
+            m = json.load(open('versions-matrix.json'))
+            print(sorted(m['versions'], key=lambda x: x['tracked_minor'], reverse=True)[0]['tracked_minor'])
+            ")"
+
+            if [ "$minor" = "$primary_minor" ]; then
+              python3 scripts/check_llvm_updates.py \
+                --versions-file versions.env \
+                --fork-ref-template "llvmorg-{version}" \
+                --write
+            fi
+
+            git add versions-matrix.json versions.env
+            git -c user.name="github-actions[bot]" \
+                -c user.email="github-actions[bot]@users.noreply.github.com" \
+                commit -m "chore: bump LLVM ${minor} to ${latest}"
+
+            git push -u origin "$branch"
+
+            gh pr create \
+              --title "chore: bump LLVM ${minor} to ${latest}" \
+              --body "$(cat <<EOF
+          Automated LLVM update.
+
+          - Tracked minor: \`${minor}\`
+          - Previous: \`${current}\`
+          - Latest: \`${latest}\`
+          - Patches: \`${patches_dir}\`
+
+          After CI passes, this PR will auto-merge. On merge, dispatch release.yml with version=${latest} to create a release.
+          EOF
+          )" \
+              --label "dependencies" \
+              --label "automation"
+
+            # enable auto-merge (requires branch protection with required checks)
+            pr_number="$(gh pr list --head "$branch" --json number -q '.[0].number')"
+            gh pr merge "$pr_number" --auto --squash 2>/dev/null || \
+              echo "::warning::auto-merge not available (needs branch protection rules)"
+
+            # reset for next iteration
+            git checkout master
+          done

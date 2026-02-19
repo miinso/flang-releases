@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check upstream LLVM tags and optionally update versions.env."""
+"""Check upstream LLVM tags and optionally update versions-matrix.json + versions.env."""
 
 from __future__ import annotations
 
@@ -25,6 +25,17 @@ def parse_versions_env(path: Path) -> dict[str, str]:
         key, value = line.split("=", 1)
         values[key.strip()] = value.strip()
     return values
+
+
+def load_matrix(path: Path) -> list[dict]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data.get("versions", [])
+
+
+def save_matrix(path: Path, entries: list[dict]) -> None:
+    path.write_text(
+        json.dumps({"versions": entries}, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 def list_llvm_tags(max_pages: int = 5, per_page: int = 100) -> list[str]:
@@ -113,15 +124,72 @@ def emit_output(output_path: str | None, values: dict[str, str]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--versions-file", default="versions.env")
+    parser.add_argument("--matrix-file", default="versions-matrix.json")
     parser.add_argument(
         "--fork-ref-template",
-        default="flang-wasm32-llvmorg-{version}",
-        help="Template for LLVM_FORK_REF when updating versions.env.",
+        default="llvmorg-{version}",
+        help="Template for LLVM_FORK_REF when updating.",
     )
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--github-output", default=os.environ.get("GITHUB_OUTPUT"))
+    # multi-version: check all tracked minors from matrix file
+    parser.add_argument(
+        "--multi",
+        action="store_true",
+        help="Check all tracked minors from versions-matrix.json.",
+    )
     args = parser.parse_args()
 
+    tags = list_llvm_tags()
+
+    if args.multi:
+        # multi-version mode: iterate all entries in versions-matrix.json
+        matrix_path = Path(args.matrix_file)
+        if not matrix_path.exists():
+            raise SystemExit(f"Matrix file not found: {matrix_path}")
+
+        entries = load_matrix(matrix_path)
+        updates: list[dict] = []
+
+        for entry in entries:
+            tracked_minor = entry["tracked_minor"]
+            current_version = entry["llvm_version"]
+            latest_version = find_latest_patch(tags, tracked_minor)
+            needs = latest_version != current_version
+
+            updates.append({
+                "tracked_minor": tracked_minor,
+                "current_version": current_version,
+                "latest_version": latest_version,
+                "needs_update": needs,
+                "patches_dir": entry["patches_dir"],
+            })
+
+            if args.write and needs:
+                entry["llvm_version"] = latest_version
+
+        if args.write and any(u["needs_update"] for u in updates):
+            save_matrix(matrix_path, entries)
+
+        # output as json for workflow consumption
+        any_update = any(u["needs_update"] for u in updates)
+        output_data = {
+            "any_update": "true" if any_update else "false",
+            "updates_json": json.dumps(updates),
+        }
+
+        # also output per-entry details for simpler consumption
+        updated_entries = [u for u in updates if u["needs_update"]]
+        if updated_entries:
+            # use first update for backwards-compat single-version outputs
+            first = updated_entries[0]
+            output_data["latest_version"] = first["latest_version"]
+            output_data["tracked_minor"] = first["tracked_minor"]
+
+        emit_output(args.github_output, output_data)
+        return
+
+    # single-version mode (backwards compat): use versions.env
     versions_path = Path(args.versions_file)
     values = parse_versions_env(versions_path)
     current_version = values.get("LLVM_VERSION", "").strip()
@@ -131,7 +199,6 @@ def main() -> None:
     if not current_version or not tracked_minor:
         raise SystemExit("versions.env must define LLVM_VERSION and TRACKED_LLVM_MINOR")
 
-    tags = list_llvm_tags()
     latest_version = find_latest_patch(tags, tracked_minor)
     needs_update = latest_version != current_version
     fork_ref = current_fork_ref
