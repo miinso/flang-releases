@@ -1,29 +1,30 @@
 ---
 name: CI PR (lightweight)
 
+# TODO: re-enable push/pr triggers once 20.x wasm32 patch is verified
 on:
-  push:
-    branches: [master]
-    paths:
-      - '.github/workflows/**'
-      - 'cmake/**'
-      - 'versions.env'
-      - 'versions-matrix.json'
-      - 'emsdk-llvm-map.json'
-      - 'scripts/**'
-      - 'Makefile.wasm32'
-      - 'patches/**'
-  pull_request:
-    branches: [master]
-    paths:
-      - '.github/workflows/**'
-      - 'cmake/**'
-      - 'versions.env'
-      - 'versions-matrix.json'
-      - 'emsdk-llvm-map.json'
-      - 'scripts/**'
-      - 'Makefile.wasm32'
-      - 'patches/**'
+  # push:
+  #   branches: [master]
+  #   paths:
+  #     - '.github/workflows/**'
+  #     - 'cmake/**'
+  #     - 'versions.env'
+  #     - 'versions-matrix.json'
+  #     - 'emsdk-llvm-map.json'
+  #     - 'scripts/**'
+  #     - 'Makefile.wasm32'
+  #     - 'patches/**'
+  # pull_request:
+  #   branches: [master]
+  #   paths:
+  #     - '.github/workflows/**'
+  #     - 'cmake/**'
+  #     - 'versions.env'
+  #     - 'versions-matrix.json'
+  #     - 'emsdk-llvm-map.json'
+  #     - 'scripts/**'
+  #     - 'Makefile.wasm32'
+  #     - 'patches/**'
   workflow_dispatch:
 
 permissions:

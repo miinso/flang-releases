@@ -2,15 +2,15 @@ ROOT = $(abspath .)
 SOURCE = $(ROOT)/llvm-project
 BUILD = $(ROOT)/build
 
-CONFIG_H = $(BUILD)/flang-rt/include/config.h
-
 # auto-detect flang-rt (>=20.x) vs flang/runtime (<=19.x)
 ifneq ($(wildcard $(SOURCE)/flang-rt/lib/runtime/*.cpp),)
   RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang-rt/lib/runtime/*.cpp)
   RUNTIME_INCLUDE := -I$(BUILD)/flang-rt/include -I$(SOURCE)/flang-rt/include
+  CONFIG_H = $(BUILD)/flang-rt/include/config.h
 else
   RUNTIME_SOURCES := $(wildcard $(SOURCE)/flang/runtime/*.cpp)
   RUNTIME_INCLUDE := -I$(BUILD)/tools/flang/runtime
+  CONFIG_H = $(BUILD)/tools/flang/runtime/config.h
 endif
 
 RUNTIME_SOURCES += $(SOURCE)/flang/lib/Decimal/decimal-to-binary.cpp
@@ -41,14 +41,17 @@ $(BUILD)%.o : $(SOURCE)%.cpp $(CONFIG_H)
 	@mkdir -p $(@D)
 	em++ $(RUNTIME_CXXFLAGS) -o $@ -c $<
 
+# always overwrite cmake-generated config.h with wasm32-safe version
+.PHONY: $(CONFIG_H)
 $(CONFIG_H):
 	@mkdir -p $(@D)
 	@printf '%s\n' \
-		'/* Auto-generated config.h */' \
+		'/* wasm32 config.h - overrides cmake host config */' \
 		'#ifndef FORTRAN_RUNTIME_CONFIG_H' \
 		'#define FORTRAN_RUNTIME_CONFIG_H' \
-		'#define HAVE_STRERROR_R 0' \
-		'#define HAVE_DECL_STRERROR_S 0' \
+		'/* #undef HAVE_STRERROR_R */' \
+		'/* #undef HAVE_STRERROR_S */' \
+		'/* #undef HAVE_DECL_STRERROR_S */' \
 		'/* #undef HAVE_BACKTRACE */' \
 		'#endif' > "$@"
 
