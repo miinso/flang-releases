@@ -212,12 +212,15 @@ end program hello
             print(f"Error: {wasm32_runtime} not found. Run with --skip-build=false first.")
             sys.exit(1)
 
-        # Find native flang_rt directory
-        native_rt_dir = find_native_flang_rt_dir(install_dir)
-        print(f"Found native flang_rt in: {native_rt_dir}")
-
-        # Create wasm32 sibling directory
-        wasm32_rt_dir = native_rt_dir.parent / "wasm32-unknown-emscripten"
+        # Find native flang_rt directory to install wasm32 runtime as sibling
+        try:
+            native_rt_dir = find_native_flang_rt_dir(install_dir)
+            print(f"Found native flang_rt in: {native_rt_dir}")
+            wasm32_rt_dir = native_rt_dir.parent / "wasm32-unknown-emscripten"
+        except FileNotFoundError:
+            # LLVM 20.x: no native flang_rt (FLANG_INCLUDE_RUNTIME=OFF)
+            print("No native flang_rt found, using default install path")
+            wasm32_rt_dir = install_dir / "lib" / "wasm32-unknown-emscripten"
         wasm32_rt_dir.mkdir(parents=True, exist_ok=True)
 
         # Copy runtime
