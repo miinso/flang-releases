@@ -15,7 +15,7 @@ index 98d7de81c..ead0797f3 100644
  #include "llvm/ADT/SmallVector.h"
  #include <cstdint>
  #include <functional>
-@@ -55,6 +58,34 @@ namespace fir::runtime {
+@@ -55,6 +58,18 @@ namespace fir::runtime {
  using TypeBuilderFunc = mlir::Type (*)(mlir::MLIRContext *);
  using FuncTypeBuilderFunc = mlir::FunctionType (*)(mlir::MLIRContext *);
  
@@ -31,26 +31,10 @@ index 98d7de81c..ead0797f3 100644
 +  return dl.getTypeSizeInBits(ptrType);
 +}
 +
-+/// Helper to get the size of 'long' for the target.
-+/// Handles the three major data models:
-+/// - LP64 (Unix 64-bit): sizeof(long) == sizeof(void*) == 8 -> returns 64
-+/// - ILP32 (wasm32, 32-bit): sizeof(long) == sizeof(void*) == 4 -> returns 32
-+/// - LLP64 (Windows 64-bit): sizeof(long) == 4, sizeof(void*) == 8 -> returns 32
-+inline unsigned getTargetLongBitwidth(mlir::MLIRContext *context,
-+                                      const mlir::DataLayout &dl,
-+                                      const llvm::Triple &triple) {
-+  // Windows uses LLP64: long is always 32-bit, even on 64-bit systems
-+  if (triple.isOSWindows())
-+    return 32;
-+  // LP64 and ILP32: sizeof(long) == sizeof(void*)
-+  auto ptrType = mlir::LLVM::LLVMPointerType::get(context);
-+  return dl.getTypeSizeInBits(ptrType);
-+}
-+
  #define REDUCTION_REF_OPERATION_MODEL(T)                                       \
    template <>                                                                  \
    constexpr TypeBuilderFunc                                                    \
-@@ -698,6 +729,112 @@ getModel<Fortran::runtime::ReductionDerivedTypeOperation>() {
+@@ -698,6 +713,81 @@ getModel<Fortran::runtime::ReductionDerivedTypeOperation>() {
    };
  }
  
@@ -67,49 +51,18 @@ index 98d7de81c..ead0797f3 100644
 +  }
 +};
 +
-+// Specializations for types that differ between data models (LP64/ILP32/LLP64)
++// NOTE: we intentionally do NOT specialize DLGetModel<long> (signed).
++// On LP64 (linux), int64_t = long. Narrowing long would incorrectly
++// shrink int64_t params like OutputInteger64. Only unsigned types
++// used for size_t are specialized below.
 +
-+/// long - 8 bytes on LP64, 4 bytes on ILP32 and LLP64 (Windows)
-+template <>
-+struct DLGetModel<long> {
-+  static mlir::Type get(mlir::MLIRContext *context, const mlir::DataLayout &dl,
-+                        const llvm::Triple &triple) {
-+    return mlir::IntegerType::get(context,
-+                                  getTargetLongBitwidth(context, dl, triple));
-+  }
-+};
-+
-+template <>
-+struct DLGetModel<long &> {
-+  static mlir::Type get(mlir::MLIRContext *context, const mlir::DataLayout &dl,
-+                        const llvm::Triple &triple) {
-+    return fir::ReferenceType::get(DLGetModel<long>::get(context, dl, triple));
-+  }
-+};
-+
-+template <>
-+struct DLGetModel<long *> {
-+  static mlir::Type get(mlir::MLIRContext *context, const mlir::DataLayout &dl,
-+                        const llvm::Triple &triple) {
-+    return DLGetModel<long &>::get(context, dl, triple);
-+  }
-+};
-+
-+template <>
-+struct DLGetModel<const long *> {
-+  static mlir::Type get(mlir::MLIRContext *context, const mlir::DataLayout &dl,
-+                        const llvm::Triple &triple) {
-+    return DLGetModel<long *>::get(context, dl, triple);
-+  }
-+};
-+
-+/// unsigned long - 8 bytes on LP64, 4 bytes on ILP32 and LLP64 (Windows)
++/// unsigned long - matches size_t on LP64 (linux/mac 64-bit).
++/// On ILP32 (wasm32) and LLP64 (windows), unsigned long is already 32-bit.
 +template <>
 +struct DLGetModel<unsigned long> {
 +  static mlir::Type get(mlir::MLIRContext *context, const mlir::DataLayout &dl,
-+                        const llvm::Triple &triple) {
-+    return mlir::IntegerType::get(context,
-+                                  getTargetLongBitwidth(context, dl, triple));
++                        const llvm::Triple &) {
++    return mlir::IntegerType::get(context, getTargetSizeTBitwidth(context, dl));
 +  }
 +};
 +
@@ -163,7 +116,7 @@ index 98d7de81c..ead0797f3 100644
  template <typename...>
  struct RuntimeTableKey;
  template <typename RT, typename... ATs>
-@@ -715,6 +852,20 @@ struct RuntimeTableKey<RT(ATs...)> {
+@@ -715,6 +805,20 @@ struct RuntimeTableKey<RT(ATs...)> {
        return mlir::FunctionType::get(ctxt, argTys, {retTy});
      };
    }
@@ -184,7 +137,7 @@ index 98d7de81c..ead0797f3 100644
  };
  
  //===----------------------------------------------------------------------===//
-@@ -764,6 +915,11 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
+@@ -764,6 +868,11 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
    static constexpr FuncTypeBuilderFunc getTypeModel() {
      return RuntimeTableKey<KT>::getTypeModel();
    }
@@ -196,7 +149,7 @@ index 98d7de81c..ead0797f3 100644
    static constexpr const char name[sizeof...(Cs) + 1] = {Cs..., '\0'};
  };
  
-@@ -803,8 +959,46 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
+@@ -803,8 +912,46 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
  #define mkRTKey(X) FirmkKey(RTNAME(X))
  #define EXPAND_AND_QUOTE_KEY(S) ExpandAndQuoteKey(RTNAME(S))
  
@@ -243,7 +196,7 @@ index 98d7de81c..ead0797f3 100644
  template <typename RuntimeEntry>
  static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
                                           fir::FirOpBuilder &builder,
-@@ -814,7 +1008,7 @@ static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
+@@ -814,7 +961,7 @@ static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
    auto func = builder.getNamedFunction(name);
    if (func)
      return func;
