@@ -203,6 +203,7 @@ jobs:
           echo "EMSDK_EXPECTED_LLVM_MAJOR=$EMSDK_EXPECTED_LLVM_MAJOR" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REPO=$LLVM_FORK_REPO_EFFECTIVE" >> "$GITHUB_ENV"
           echo "LLVM_FORK_REF=$LLVM_FORK_REF_EFFECTIVE" >> "$GITHUB_ENV"
+          echo "LLVM_MAJOR=${LLVM_VERSION_EFFECTIVE%%.*}" >> "$GITHUB_ENV"
           echo "PATCHES_DIR=$PATCHES_DIR" >> "$GITHUB_ENV"
           echo "PATCHES_SIGNATURE=$PATCHES_SIGNATURE" >> "$GITHUB_ENV"
           echo "PYTHON_FOR_TOOLS=${{ inputs.python_cmd }}" >> "$GITHUB_ENV"
@@ -306,7 +307,7 @@ jobs:
           set -euo pipefail
           llvm_major="${LLVM_VERSION%%.*}"
           if [ "$llvm_major" -lt 21 ]; then
-            echo "LLVM ${llvm_major}.x: removing flang-rt from LLVM_ENABLE_RUNTIMES (not supported)"
+            echo "LLVM ${llvm_major}.x: removing flang-rt from runtimes (keep openmp)"
             "$PYTHON_FOR_TOOLS" -c "
           import json, sys, re
           p = 'cmake/CMakePresets.json'
@@ -315,13 +316,13 @@ jobs:
             cv = preset.get('cacheVariables', {})
             for key in ['LLVM_ENABLE_RUNTIMES']:
               if key in cv:
-                cv[key] = ';'.join(r for r in cv[key].split(';') if r not in ('flang-rt', 'openmp'))
-            # remove flang-rt specific vars and omp flags
+                # only remove flang-rt (doesn't exist pre-21), keep openmp
+                cv[key] = ';'.join(r for r in cv[key].split(';') if r != 'flang-rt')
+            # only remove flang-rt vars (keep LIBOMP for openmp)
             for k in list(cv):
-              if k.startswith('FLANG_RT') or k.startswith('LIBOMP'):
+              if k.startswith('FLANG_RT'):
                 del cv[k]
-            # disable in-tree flang runtime (built separately via Makefile.wasm32)
-            cv['FLANG_INCLUDE_RUNTIME'] = 'OFF'
+            # 20.x gates add_subdirectory(tools) on FLANG_BUILD_TOOLS, must stay ON
             cv['FLANG_BUILD_TOOLS'] = 'ON'
           json.dump(d, open(p, 'w'), indent=2)
           print('patched presets OK')
@@ -368,6 +369,7 @@ jobs:
             -e ACTIONS_RUNTIME_TOKEN="${ACTIONS_RUNTIME_TOKEN}" \
             -e SCCACHE_GHA_ENABLED="true" \
             -e CMAKE_PRESET="${CMAKE_PRESET}" \
+            -e LLVM_MAJOR="${LLVM_MAJOR}" \
             -e NINJA_VERSION="${NINJA_VERSION}" \
             -e SCCACHE_STATS_FILE="${SCCACHE_STATS_FILE}" \
             llvm-musl-builder:latest \
@@ -393,7 +395,16 @@ jobs:
 
               ninja -C /work/build runtimes
               ninja -C /work/build runtimes/install
-              ninja -C /work/build tools/flang/tools/install
+              if [ "$LLVM_MAJOR" -lt 21 ]; then
+                # 20.x: target flang-driver only (FLANG_BUILD_TOOLS=ON installs all tools)
+                ninja -C /work/build tools/flang/tools/flang-driver/install
+                # 20.x: native runtime not installed by tools/install
+                ninja -C /work/build tools/flang/runtime/install
+                # 20.x: fortran module files (iso_*, ieee_*, etc.)
+                ninja -C /work/build tools/flang/tools/f18/install
+              else
+                ninja -C /work/build tools/flang/tools/install
+              fi
               ninja -C /work/build tools/llvm-nm/install
               ninja -C /work/build tools/llvm-ar/install
 
@@ -416,7 +427,16 @@ jobs:
                 -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           ninja -C build runtimes
           ninja -C build runtimes/install
-          ninja -C build tools/flang/tools/install
+          if [ "$LLVM_MAJOR" -lt 21 ]; then
+            # 20.x: target flang-driver only (FLANG_BUILD_TOOLS=ON installs all tools)
+            ninja -C build tools/flang/tools/flang-driver/install
+            # 20.x: native runtime not installed by tools/install
+            ninja -C build tools/flang/runtime/install
+            # 20.x: fortran module files (iso_*, ieee_*, etc.)
+            ninja -C build tools/flang/tools/f18/install
+          else
+            ninja -C build tools/flang/tools/install
+          fi
           ninja -C build tools/llvm-nm/install
           ninja -C build tools/llvm-ar/install
           end="$(date +%s)"
@@ -462,7 +482,6 @@ jobs:
           "setup_emsdk=$duration" | Out-File -FilePath $env:TIMINGS_FILE -Append
 
       - name: Verify emsdk LLVM major
-        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
