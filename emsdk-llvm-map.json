@@ -1,746 +1,28 @@
 {
   "flang_major_to_prev_llvm_major_latest_emsdk": {
-    "19": "3.1.72",
-    "20": "4.0.8",
-    "21": "4.0.23",
-    "22": "5.0.1",
-    "23": null
+    "18": null,
+    "19": "3.1.52",
+    "20": "3.1.64",
+    "21": "4.0.1",
+    "22": "4.0.11",
+    "23": "4.0.23",
+    "24": "5.0.1"
   },
-  "generated_at_utc": "2026-02-19T06:19:04.243044+00:00",
+  "generated_at_utc": "2026-02-23T08:57:18.728300+00:00",
   "llvm_major_latest_emsdk": {
-    "16": "3.1.49",
-    "17": "3.1.56",
-    "18": "3.1.72",
-    "19": "4.0.8",
-    "20": "4.0.23",
-    "21": "5.0.1"
+    "18": "3.1.52",
+    "19": "3.1.64",
+    "20": "4.0.1",
+    "21": "4.0.11",
+    "22": "4.0.23",
+    "23": "5.0.1"
   },
   "notes": [
-    "llvm_version_estimate is inferred from emscripten ChangeLog release notes.",
-    "Some releases do not explicitly mention LLVM updates; those are branch-filled.",
-    "Use this map as an operational guide, not as a formal ABI guarantee."
+    "llvm_major_estimate verified via clang-XX binary name + `clang --version` on downloaded packages.",
+    "Verified range: 3.1.52 through 5.0.1.",
+    "Boundaries: 18->19 at 3.1.53, 19->20 at 3.1.65, 20->21 at 4.0.2, 21->22 at 4.0.12, 22->23 at 5.0.0"
   ],
   "releases": {
-    "3.1.0": {
-      "binary_checksums": {
-        "sha_linux": "0714344e32e244e6d44d9ea75937633ab1338e417a232fb66d6dcd7d4b704e8c",
-        "sha_mac": "f6c1cad729ed799e1df09eacf5aa80cce9861d69ec6d9581c17e4ba8d9b064ce",
-        "sha_win": "756c41cbcab4ae6077cca30834d16151392b8c19ab186c13d42d7d05d6d727cc"
-      },
-      "emscripten_release_hash": "562e3a0af169e6dea5e6dbecac2255d67c2c8b94",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.1": {
-      "binary_checksums": {
-        "sha_linux": "ba94c5ecabacbedc89665a742c37c4c132c739aea46aa66fd744cb72b260c870",
-        "sha_mac": "8b5f8cec55af0e6816a08d8d1e8b873f96d0e0504fdd6e8deb2fc024957d1aa7",
-        "sha_win": "6cbe976aff6155cf1c48707f0520b5aa6a7770860e9b1964bfca3e5923ce7225"
-      },
-      "emscripten_release_hash": "5ee64de9809592480da01372880ea11debd6c740",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.10": {
-      "binary_checksums": {
-        "sha_linux": "f5a937383b5c9fa15071a31d679a2ddd5c03bc8952cbbd5bfbf7c0a86c2dae5a",
-        "sha_mac": "e73491f2787cbda75e718c3947916b57259164eddd9b2db16b9c876d3deb16a9",
-        "sha_mac_arm64": "d7485ce3b13f183484af5163d7bec79ece9a1fdc5845f8152e36270e6f90cfd9",
-        "sha_win": "dd75061405bc902ecd983bd3e4cfd6931a866e1c9de602c4458280cbeb271720"
-      },
-      "emscripten_release_hash": "8bd05c7221b4ce34d4bedec40b672d94e681a765",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.11": {
-      "binary_checksums": {
-        "sha_linux": "ba52cfd784362530866c9d554ddc62cfa3f0690f44007c0b3b36e189bb579d5e",
-        "sha_mac": "c46548425e0bf4acd3c4275aff6a463c90ff1faf283ae7f5237d8c17bf84d779",
-        "sha_mac_arm64": "c5ae40c468955ed02b86c54061278d2b4075b1230612bae5910f836aa9c200b3",
-        "sha_win": "74481a1998236fd9d296f367584934d5ab8bbf174446ceb647f714031671de98"
-      },
-      "emscripten_release_hash": "8c3a799341c01148692c52fda73bbba5e89c5727",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.12": {
-      "binary_checksums": {
-        "sha_linux": "ac8ae46b2fe2fbef07077cdeefc8288d2a73e3189958f32b36f2d17d868275d0",
-        "sha_mac": "c33afddd7c8f7a5293cb427ef26eb65f51fa3121d0577568824174227aa37ef3",
-        "sha_mac_arm64": "253feff779385d2499764cd988175446e21db8cbb9952746e96969c2a763924c",
-        "sha_win": "04015fb6a1b4ad4d7c16587a7eeaabf19c5b35097f3e28efa029c0c67547067c"
-      },
-      "emscripten_release_hash": "a8c3b314d61e2bb98581d522f858132b2fc21488",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.13": {
-      "binary_checksums": {
-        "sha_linux": "290f04300465cbb7c8e920f9986128b3f287b14b93627b0c6d069d534860c1b4",
-        "sha_mac": "72b209a3e5800be155cf5b29bdaceb18aefceeba68f35ac719a483bd27d85705",
-        "sha_mac_arm64": "2bf90ed73454f58b810e09a776a34ddf7395f9ee45580f3a8fea53f74ba7ede2",
-        "sha_win": "07fd730289c26f72ae4037fd25f608f6b9d36f1950677229b6c7d392957db3d2"
-      },
-      "emscripten_release_hash": "bc44364b561cfde15c243a54e3b96ea12d7ea284",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.14": {
-      "binary_checksums": {
-        "sha_linux": "e2c43068fb1985592db42183a13f85bbd9518b3747746e0003d70c7d770a0b2f",
-        "sha_mac": "567e9548f3fa7c1aa717821af4aaa7849a0f7217cb55eb7f66a06c898808fd96",
-        "sha_mac_arm64": "df8319aba8bc0d0c40ebec3c8f45e507c2a51a57df24826d4cab6f6cd75017ac",
-        "sha_win": "6bfec6bf6a01e483a57e91f7223340a425f6ff711cbd32a08ed78002810d7882"
-      },
-      "emscripten_release_hash": "ade9d780ff17c88d81aa13860361743e3c1e1396",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.15": {
-      "binary_checksums": {
-        "sha_linux": "737db513047d12e95a12f4fbe05314f3af79ac955d1ea43fc83626337e307edc",
-        "sha_mac": "f8993371a1ff713203023f0283054a31df5342ca287debc4e16d04d97e069aee",
-        "sha_mac_arm64": "c61a8efa8543a6c44e394a0685e7d4facb4c7dbb210c4c32d311b0002c4dec99",
-        "sha_win": "235592467a0be6a537e03fb587aaee230aa2c889f2785cb9754eb44bfbf747ed"
-      },
-      "emscripten_release_hash": "568a46a9fb7e1f1686a6f7216b3dc976f28d2a79",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.16": {
-      "binary_checksums": {
-        "sha_linux": "bdce7e58833069a98d7e0b4fd9d6fea7394770ec10339cc95ed9fe52ba39f3a7",
-        "sha_mac": "d05f4e997324d7f7d8561436677687d296893d6414f53930184fab272e4c6158",
-        "sha_mac_arm64": "36ab8da30698558a567c5c1c0e130b59f08cf4b29c9c5242f4ea60b449ecff17",
-        "sha_win": "e1324c22c914ab7f62fe6d38a550de25b2232a723c80393fa8884a260c07766d"
-      },
-      "emscripten_release_hash": "fb1baf00423818052359cf9126e94bc71c39feb5",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.17": {
-      "binary_checksums": {
-        "sha_linux": "562b3ba75ce77a917317bc697febb38194e85cfe07f4fec308c3b29c621f8f13",
-        "sha_mac": "8a2bee8ea434049e40663a6d78d1c3584e5c32196fd85d6a10f3192d2e3aba4e",
-        "sha_mac_arm64": "5f60d3f351d06d862e853a294642d24243d6cb197e34c2f2602d80555c2eb014",
-        "sha_win": "90b2ade825e07bb05831090dd64b5f5b01a4169a84a3ddec85fcd60be3b246a5"
-      },
-      "emscripten_release_hash": "d27fef2070c86a218965da8b8b5df8b4425aa3bb",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.18": {
-      "binary_checksums": {
-        "sha_linux": "6ef373c4ff3cdf33d7beecea47d4eaee7795693f8ca9469f33785cb9c54f40bb",
-        "sha_mac": "ad0e645abdb6d3f0b6c6ad0ee70761010a712949c9b0b193aefc78ecbc3f1710",
-        "sha_mac_arm64": "68d0a1ec3e83e0415e24133c59e64206b83686712434c8c2e6792547cf654b1c",
-        "sha_win": "96829a228f7c08fabd37833f7361614785aa39aa865beef06890ee8ede58dc66"
-      },
-      "emscripten_release_hash": "49d45744895c7d7e28acd94a385d7ee361653b4a",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.19": {
-      "binary_checksums": {
-        "sha_linux": "18d4a5bb93371fe1d4586db9804f673fff0c510d98713ec25b6bda1a8457230d",
-        "sha_mac": "6adb721340cb93b7a3efafbfd1d283842a39bb6f1390630b0806c8af26b66840",
-        "sha_mac_arm64": "429c9e3a79d32380f3dfee52b1001963edaa2e3035fce9f52ca87b08e1a2f26e",
-        "sha_win": "0368eefb28f42799ce897020d0d10a4a27e1b69b650575d94deb268e402a3632"
-      },
-      "emscripten_release_hash": "4c3772879a04140298c3abde90962d5567b5e2fc",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.2": {
-      "binary_checksums": {
-        "sha_linux": "4fb53364a2ba1de8978445aa26b2204bfd215b41da5d7df04f231040b197010a",
-        "sha_mac": "a8e347accb1ff402d96a128912ac8cda1731611c9f89095fee0ad39a6a18bbc3",
-        "sha_mac_arm64": "4374f5c852d0403b0a3b0e9dc8a3856a340e9d82ecf0f20aa8b36c6179d31fc8",
-        "sha_win": "e96f6ab8252fefa42f461676311d4c4e2d96fdc2e876ece07d9d7a49ef31aef0"
-      },
-      "emscripten_release_hash": "6626e25d6d866cf283147ca68d54ac9326fe399f",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.20": {
-      "binary_checksums": {
-        "sha_linux": "3b606d133489aac8cdfff4f99ff14a35563b1fafe658aa23f83694f77ed9467a",
-        "sha_mac": "cc9ea1696bdb3f28778bac1cf4587a34e90830e1c64976cd205fd73e77566cd8",
-        "sha_mac_arm64": "b976410bf4fa1af9896be1c736634bfb56b2ef0f3386cd3cf39616ce47445cc0",
-        "sha_win": "1e6806ee240ab838ae7eee618c57efc793195c62e4d167136507efcfa66d6c6d"
-      },
-      "emscripten_release_hash": "d92c8639f406582d70a5dde27855f74ecf602f45",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.21": {
-      "binary_checksums": {
-        "sha_linux": "7045ddb3b37a2cc63cb1cf976019a6a3b7f8dbdc71254db0eee5b0452f94e9e7",
-        "sha_linux_arm64": "2852c8b108ec748d52d31dab3f4854bc6022df008019daff1c7e31ac00363b3f",
-        "sha_mac": "2a8d3d3ad721fec81ca1a4a581e4183b6e732e9905beb874531851846a05a367",
-        "sha_mac_arm64": "cf788a7bdc38bb40d01f94b2d46acafb0e2f02d8ee3b3d69541c114e467ee37f",
-        "sha_win": "81518bba13f41717ffe6990b6d4a5af635d0c9d0f71a8d3bc0980cd0bc8f5f66"
-      },
-      "emscripten_release_hash": "a16a8bca2466eb144f7c93fa899c0272c8815dc3",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.22": {
-      "binary_checksums": {
-        "sha_linux": "a310ed9f16c97a91c72564ca5f85c412cb99429d8001825663fda1b28c00346e",
-        "sha_mac": "b19afaf414178781c4c91ee711ec4d9063b9736719e45ca2e8b45c2258df16be",
-        "sha_mac_arm64": "7c8212abf77f0307b6ff848bf9c6212f870506df6d074349f76401f30f9fcefe",
-        "sha_win": "2c0cfe267d47f390d7e35a83545b1d5043e4a7fb77b838ee19b0fce65035f55d"
-      },
-      "emscripten_release_hash": "990cee04a21caafc75955d736fb45791a7f2aeee",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "explicit"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.23": {
-      "binary_checksums": {
-        "sha_linux": "3b8d9e163d6afc8569deca0ba1d4042f80da7a31e23cee006c3faa9cbf2fbc31",
-        "sha_mac": "fd1c79475e47fd2f06ee9ba189e68309e443c2d3c56fd28163d1cd6f77047075",
-        "sha_mac_arm64": "66e57ee0962ec31056674b5681f91bd62f85b0bf1238a8d5b160660c0bf47292",
-        "sha_win": "7c30b281abcc0ffb9e7575197f1ac0598a94c6cec36547b81554a97b792a9e75"
-      },
-      "emscripten_release_hash": "bfd5e63a44ba4c8568cd8ac87c27b35e40732bf4",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.24": {
-      "binary_checksums": {
-        "sha_linux": "20e8e5bd745e3ad69c03bb877091d2fbb0c7db1eab309de8f185e9821aea40f4",
-        "sha_mac": "cfb897a980dd51fceb02ff143ad0fd8e5d299db640c5646d1547d522194545f2",
-        "sha_mac_arm64": "e87b0727343051312f82a6653cad4682a518dd9cb6575844c0cd6505d520fab6",
-        "sha_win": "a0ea07f9014a912f13176fdbbc1ee7ab08104d45e7ca7e1c237505579b63d530"
-      },
-      "emscripten_release_hash": "54217a0950bb1dafe8808cc6207d378e323f9d74",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.25": {
-      "binary_checksums": {
-        "sha_linux": "c5ae6b4525845ea36bde89cbf4e1d03de87a2658862d76c6a53bbf8de7c67ff5",
-        "sha_mac": "d2581aaa7207f0d9dd9949247f0706bda8561e805d67aec166ed4f3b39c3a3fa",
-        "sha_mac_arm64": "dbcb76036a09248c2a839872c27b87b6d4ccc81e57add4e2a6f5e560a2c530fc",
-        "sha_win": "3a86d98d934456a74ed06388c1487d95a0d5a3f31777636453f22e61d57d7fb1"
-      },
-      "emscripten_release_hash": "ff6babb041d0f31575cc16d15ef82c6222ca99b8",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.26": {
-      "binary_checksums": {
-        "sha_linux": "82d24d5619c814ae99ef7243de428600c02e96dfc49c36e44753b1fce626766e",
-        "sha_mac": "7b645979d8901f3153507561bbec10ecfeb197dca5914228715a74b760cf7eec",
-        "sha_mac_arm64": "d9c647fd70588bae71303a6c923df8a44ffe63e168b375d35bf6ceda21258fa1",
-        "sha_win": "1ad49d69634ce2d1fe04614c18060a903c102e1dbc9dfdef3a03e52c189b4c92"
-      },
-      "emscripten_release_hash": "4f68bb2a505c727bcf58195cf4da20592a6e92c8",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.27": {
-      "binary_checksums": {
-        "sha_linux": "4dc872260c8f42a8e20c8612b2255adbd466fec54cfbe37b46eca4eb34a2b03f",
-        "sha_mac": "40c3326147b162b8357efdc72476faaa6686338cff3e176680e361c2511453e8",
-        "sha_mac_arm64": "7b87610de966b84353c8c1ded8e12c034b5b913c093210ebd3b26320e2ac2990",
-        "sha_win": "39bbfcb09ba7feb214518a67b1ff6d38bae065b416b4483834e4fdaef2316f8c"
-      },
-      "emscripten_release_hash": "48ce0b44015d0182fc8c27aa9fbc0a4474b55982",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.28": {
-      "binary_checksums": {
-        "sha_linux": "c23426d8b6d94cea702542c39e3bcef9439425dd4bd03bcc172e291dbbe5ed0d",
-        "sha_mac": "4cfb918fe3233a2b31e5734e85b2a365e634f4e8a83c4390e8595cb98ae6bd8c",
-        "sha_mac_arm64": "a47f1f09bc7bbd4952cf54445d4fbfae53623ecbfecee0506a637665c7b4ea4c",
-        "sha_win": "4388d230871d5b1e15c2fd0db21a792ab2836f23d860475fe183c03c5db75c8c"
-      },
-      "emscripten_release_hash": "30b9e46ddcea66e91530559379089002d8b692cf",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.29": {
-      "binary_checksums": {
-        "sha_linux": "d3f274446924c27082603170fab60ba78a2fb51360e5578fab4d9b5adab0fa9a",
-        "sha_mac": "ed224c296efd22437f298f0fe0852613b0b1d48810b1b6d87b6b7e6beb589fe2",
-        "sha_mac_arm64": "af9bb86a7996bbbb36820e93dbc7f537ac23070e8730439b1e49792c4fc008e9",
-        "sha_win": "6203f80273565a2ee6734bd33ad7bc6940ef709cbd593e70d6489e96c02ced25"
-      },
-      "emscripten_release_hash": "d949f1b99a477d4b0b54d95413df3688afa69d0a",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.3": {
-      "binary_checksums": {
-        "sha_linux": "8b840819eb88f9178c11bad25859ce448a0559e485823a863a6add21380636ca",
-        "sha_mac": "0cb3f9bfbcc744233eae9d20036155738409405eacf8a3d4f9beefc5919d809a",
-        "sha_mac_arm64": "ee2772f380419df17d154e00388a16bcddc78c7af035c16a2ee534d6ecf099aa",
-        "sha_win": "c0549e1dbaa581ae66934c38beebd4250cd450cc2778e9a602cd9431bc81bc37"
-      },
-      "emscripten_release_hash": "2ddc66235392b37e5b33477fd86cbe01a14b8aa2",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.30": {
-      "binary_checksums": {
-        "sha_linux": "151d7afdfb728e1e55ed1d100e4d3fbd20925fd65f3c3b9e093061a2c89dcac7",
-        "sha_mac": "f0cdbc676c58bce7a65572418fb1521665ed522d7d05ae90f0764b77801982bb",
-        "sha_mac_arm64": "fca4eaf8ff528bb9308e5e8d0cf2709713b99fc19d55c6578a6c8f3e66182f55",
-        "sha_win": "3001101622d98b2af3e5209154f60bbe341d32f6178307c6c723e84b5fe08bdc"
-      },
-      "emscripten_release_hash": "dc1fdcfd3f5b9d29cb1ebdf15e6e845bef9b0cc1",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.31": {
-      "binary_checksums": {
-        "sha_linux": "5952523c0c58cfc7c8839c1d3fe42ff34af5d8721231306ee432063dfacf96ca",
-        "sha_mac": "13482cf3cb29f423f2037b9dc2b9e4ff72d0a49fcd471bbaa9b76d9f86f31d82",
-        "sha_mac_arm64": "654a35af16be5eeb2082e68fb36190fe76de28fa2da75ac0d2197482a203f39a",
-        "sha_win": "493c29f5a505ccd9687036ee4c580d190b1c32b286be0e751a78e68997cec8b2"
-      },
-      "emscripten_release_hash": "1eec24930cb2f56f6d9cd10ffcb031e27ea4157a",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.32": {
-      "binary_checksums": {
-        "sha_linux": "25fa252e9fc674d1bcef35b3a10dd85024aa93c843b8067f8d917e5151968ffc",
-        "sha_mac": "7881714e7738eb183b5a421bb2b907e96359e791ad0a622be6e7f5690a16b9d6",
-        "sha_mac_arm64": "04eede7352aca4b6fc1c111a8b31d00e8aa40547c3cd062ff9be4ffe1ed98d95",
-        "sha_win": "22c3429eb1e6051bda46e9c02c14eca1ae3749ba8c411fbd5a3b51e3b9623161"
-      },
-      "emscripten_release_hash": "29ad1037cd6b99e5d8a1bd75bc188c1e9a6fda8d",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.33": {
-      "binary_checksums": {
-        "sha_linux": "eab02b3f4b7c076974452ba602f908a36adf597afa15b16095b441f191ede1bb",
-        "sha_linux_arm64": "5e15af6affcf37c9ce6c304b4aeccb87a2758e1ef029dbc996f9d77d7444378e",
-        "sha_mac": "b8dad3cddb19c1daf9dae99020bd17b903ae9649cfc58e433ea4951e758804de",
-        "sha_mac_arm64": "fbf03d06c7503f091191e440b8ea577d65b3261167cdb47359d053f12888974b",
-        "sha_win": "031f951668eaeea39bd9363abb3f514efc3401506374984fa9b1d7ba3130a62f"
-      },
-      "emscripten_release_hash": "49b960bd03b3a9da478a08541ce6eafe792a58a8",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.34": {
-      "binary_checksums": {
-        "sha_linux": "dd3713f077072dcdb811f934d6685187daa47c424039e31cba83633c8d1681b1",
-        "sha_mac": "3824609ee9b7c9919e29b19775d495a16778adb981867901f4bc503fe2f65d7d",
-        "sha_mac_arm64": "72728637171df46e7cd22f90537dd6faf1d4809ed1befc504ff96768c82f0e0f",
-        "sha_win": "7538d1a1e0d586bd0723f595557551b05d724a5803132949a6fafb8b056af995"
-      },
-      "emscripten_release_hash": "2fdd6b9e5b67d5b62f84d0501a876513ff118ef1",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.35": {
-      "binary_checksums": {
-        "sha_linux": "9d4b5dcb719d39e59b646ecf7c409db20c5cb6b9575f5362ffb49a9e66290819",
-        "sha_mac": "01ea06c1f4a6c980bfdc812f9599a8ef424a975c89d5c288c9e6f2fa5e5ef5ad",
-        "sha_mac_arm64": "f6480ee21c80fe062e0f9d8555f8bdef621601634b9bd1e5ad07b90777ff5e4b",
-        "sha_win": "cd26088365433ce1263a11898406c2f9284e55c2c7f23b26170c2a172c52f0b1"
-      },
-      "emscripten_release_hash": "671550b5bdceee7bdb21493714f9a815aa5149a9",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.36": {
-      "binary_checksums": {
-        "sha_linux": "55d3cc557a83716f7a7fe121a07dbd59ed4b5d425051e22c902570e3e0ea6c4c",
-        "sha_mac": "6643fcef0f928cd730b894f0c2c3343eeef870576e43e56428a7a8247c7bc921",
-        "sha_mac_arm64": "2e8d9103cd0ba7a2b143927196a630b091b981006c908d7d36995a210a04d73b",
-        "sha_win": "69a197f6fc153d9f98ced539564683cb13ff0ef144d3d4fbddf643e33b5f860c"
-      },
-      "emscripten_release_hash": "adedc0750c4a89b65bee866edab24298cb8d6677",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.37": {
-      "binary_checksums": {
-        "sha_linux": "9ff44ef69d3f389adcacbb9b95331da72cffdf6e9431c8beb6ebf7aedb77499c",
-        "sha_mac": "accfe90322b6449933c3d8e1346024e2e2e3bef7b101942294f995b2c8e1b60f",
-        "sha_mac_arm64": "a0461e234c08bd7ddd7a86b49b52ccc853ebe4ce0fb5b4314e9de0193c32514a",
-        "sha_win": "e026ea2570e747d0640829c62abddcdc14a4acffe31180110971750b80042d7a"
-      },
-      "emscripten_release_hash": "7c905cfc1ca6699f6ccb288ae174902cfbdcf0a2",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.38": {
-      "binary_checksums": {
-        "sha_linux": "e2812859fa32b6019f688dd66f2fa48efbfb5594da9a43b876fd4fe4ca474c20",
-        "sha_mac": "a88c4b9eeb5dedb0d9af3b6b84bd45c486de567fbeba1675edb2d7d196e0013b",
-        "sha_mac_arm64": "0e5d1519ccc1163c13ee93d85f70ef6a520464f59ca3795c47cc7c44ab0f5f49",
-        "sha_win": "bcdea031961a4f3c23008d53e083770d19751dd2a2aa71cacdea8462d09548be"
-      },
-      "emscripten_release_hash": "03ecb526947f6a3702a0d083083799fe410d3893",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.39": {
-      "binary_checksums": {
-        "sha_linux": "7ec6e15a2da2701243f89af7744403ee011211e59e4f0a6fd8ced544e72e917d",
-        "sha_mac": "dad7d270207aaffb8b8ef584cf0579bbad144879ea6f00ec9a8080adf22130dc",
-        "sha_mac_arm64": "c5e474ca661348d0339c785e25ad81845d49dab19d5e3e84eef2393e623e0bac",
-        "sha_win": "a04f898b9d54dd2dc95fb697a92a1b65d07102a4cc36a02dea44c448fad83472"
-      },
-      "emscripten_release_hash": "1b56b171b627af0841cf8d4d8c0160c6cb6d855f",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.4": {
-      "binary_checksums": {
-        "sha_linux": "4a57c0d60eeb4e021de61c8497f0b595a0a9db0235f1640a528de752409f4fcf",
-        "sha_mac": "f28a9a4f42f67de1d5c4d8a288f29e5082bbf4fcb172e0c6e248695163372478",
-        "sha_mac_arm64": "be35043edad7a7022f7b174e8efc90e2db54ba4fd71288760bea4db082835f56",
-        "sha_win": "d97ff247bdfc7e839610cbcd87d30a65018f964d183d5b852b6021d43c5d199a"
-      },
-      "emscripten_release_hash": "39e60dda6945cfcd6487725bdb1361ae7975173f",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.40": {
-      "binary_checksums": {
-        "sha_linux": "5501e750c92f5a54b27ee101f6816e7416f154cb4181b73fd0be3faae947016c",
-        "sha_mac": "052d6236ce49eaf3aa02b3c4d367b5ed4fb78209c1f1e64d48beb79e9c0b7131",
-        "sha_mac_arm64": "c8af68f904367938bac255f5e64ed271021b289bb135dc77ab3b58b87e1ea5b2",
-        "sha_win": "3ec21ca18b56f7d3953da2e0d468154fcaaf30b5ac663d9ad00c41540923a099"
-      },
-      "emscripten_release_hash": "c3122846bb040798aab975f61008c37eb19476de",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.41": {
-      "binary_checksums": {
-        "sha_linux": "493ec8bd3f3ea3d6d616de01d6dac9c2af696978c6c44d453757ab2f8a666656",
-        "sha_mac": "bb088e7b8f83b6bae02a0992eae61351e4e97bd033f8c8937cdaea0cb961ac9e",
-        "sha_mac_arm64": "aaba2de03a6dcc0db90e61e5e405a52aa47124e5ef21953d052ca015ce5ee773",
-        "sha_win": "c7afbf2dfb6040990bd40bd72c726ada36e3e6f1985c4b62db7296465dd0778f"
-      },
-      "emscripten_release_hash": "eb71265ef0ab905620015adbfedacf88c5dbf021",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.42": {
-      "binary_checksums": {
-        "sha_linux": "aaa076e64dd511b0d874c348f8dab80a2f9ade0887ba74845fd02c40bbf9e68f",
-        "sha_mac": "4715002394c5d444243c77ca231883eb999cf3313c4869cf0ae288d911f80f89",
-        "sha_mac_arm64": "84dede714edd81362ed2a2f79b91b1bd9cd544f219f937582e616d73bf0ea7f9",
-        "sha_win": "4c704f4a4927aa537c2815a72915b7591c163ae8f0dbaedc167e810dd2a4a83d"
-      },
-      "emscripten_release_hash": "9d73bf4bd5b5c9ce6e51be0ed5ce6599fcb28e9e",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.43": {
-      "binary_checksums": {
-        "sha_linux": "147a67a3454783b8c351780ec0111329d1e6fbb1d2fcdfe1c035e1c0997e0701",
-        "sha_mac": "d84896c6d1ba0fbd9a5e5c5830b3ac4a02da5e683e9d8c7172f4c3ffdfaa0392",
-        "sha_mac_arm64": "d684f0bfc655f61e76cec29fdaad1668f3d21a229fdd908267f400691468328d",
-        "sha_win": "a335f5f5b070cf354f1ca8e0afb23c06ae5f9ffb2c501124da7fcaea09a7db6d"
-      },
-      "emscripten_release_hash": "bf3c159888633d232c0507f4c76cc156a43c32dc",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.44": {
-      "binary_checksums": {
-        "sha_linux": "5ffa2bab560a9cda6db6ee041a635d10e1ef26c8fc63675d682917b8d3d53263",
-        "sha_mac": "291b2653f7576f8354f0267047e47a5ddef11223c89d5be399d04618f13b3832",
-        "sha_mac_arm64": "ad1625821b49ccbbe733596223fdf99fd786470d679f2c9dfabd4a1a7b929282",
-        "sha_win": "8b61f60ef169b1c20207361067c40192c83b96cdbdb2f4cff21dfb20b9ee528d"
-      },
-      "emscripten_release_hash": "b90507fcf011da61bacfca613569d882f7749552",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.45": {
-      "binary_checksums": {
-        "sha_linux": "1c0576765f8b34603eead6f2bd4bc77bf68ea2f0a39ed4c144514103e85bc7d9",
-        "sha_mac": "87f63ebb2f9807435016b238bbf46ccb94c919ec0786b46463cd788634391b0c",
-        "sha_mac_arm64": "29e698772c0e00c21ce120dd1db1586f5c65507168babff148c2e628add6e72a",
-        "sha_win": "891d49f8828f715ef621d55fe202de4929bbdc89b69101fd33963571458a7f47"
-      },
-      "emscripten_release_hash": "2b7c5fb8ffeac3315deb1f82ab7bf8da544f84a1",
-      "llvm_inference": {
-        "anchor_release": "3.1.22",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 6,
-      "llvm_version_estimate": "6.0.1"
-    },
-    "3.1.46": {
-      "binary_checksums": {
-        "sha_linux": "75cbf14629b06e417b597d3f897ad7d881c53762380aca2f0dd85f1b15891511",
-        "sha_mac": "06f45608381203d501141be632cab960aa105626c3a0f7a48657b79728103880",
-        "sha_mac_arm64": "c2a85b509a91663b390f77d51fba775421d42456211466fd3757f9dede7af9e4",
-        "sha_win": "1ed3a3f36dee5d373ebea213fc723b3eeb7d6ba4c43da6a951ea0d76f265f234"
-      },
-      "emscripten_release_hash": "21644188d5c473e92f1d7df2f9f60c758a78a486",
-      "llvm_inference": {
-        "anchor_release": "3.1.46",
-        "mode": "explicit"
-      },
-      "llvm_major_estimate": 16,
-      "llvm_version_estimate": "16.0.6"
-    },
-    "3.1.47": {
-      "binary_checksums": {
-        "sha_linux": "bdc50abe5c7d4b4f14acea4ec36b270e86770cea2da4b0c393b80a692dc7eb7a",
-        "sha_mac": "6a3a116707037d75a967a7d971894d8ace74a2a230aa50ba55e88e7cd7b94953",
-        "sha_mac_arm64": "b13d228e6a1c89c13a1500fff07dcf093fb01fa621d458496d4a6d7f05cfd600",
-        "sha_win": "66a6c4f0cda4ace14a86d3e59d20685d35211854d21670632b0566ac73638245"
-      },
-      "emscripten_release_hash": "39ade279e75e6d17dd6b7eb9fba2006e61fe966b",
-      "llvm_inference": {
-        "anchor_release": "3.1.46",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 16,
-      "llvm_version_estimate": "16.0.6"
-    },
-    "3.1.48": {
-      "binary_checksums": {
-        "sha_linux": "689fffcb60f93a60a7bb52cc205ead43ab31f252753cfef39ae2074f6a442634",
-        "sha_mac": "8ac2a3f32b4cba0d84ca5a1fe1db883dbfc2731432833ab5a7e6967c5f4ab7dc",
-        "sha_mac_arm64": "10dd40f94fe5c5f8c4efc838d1623cafe98c629d4c7872ad8c15cd7b0836f281",
-        "sha_win": "9276435ea7c402c18572a4301d6a26426eac73414b0ed5cb3e721044a50f651d"
-      },
-      "emscripten_release_hash": "694434b6d47c5f6eff2c8fbd9eeb016c977ae9dc",
-      "llvm_inference": {
-        "anchor_release": "3.1.46",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 16,
-      "llvm_version_estimate": "16.0.6"
-    },
-    "3.1.49": {
-      "binary_checksums": {
-        "sha_linux": "18f452f8bdcd13e0d3a65c569180d1b83579775eadb8069cb32bca1f2e751751",
-        "sha_mac": "c5275eab15e42abb3a42bbe1cfe38ee1b852febc78f65f5605b8972a7bee672f",
-        "sha_mac_arm64": "10a722e2c7dcc97236f70f2d68b23a7975800ebf27ec4fdf76deddf483b1c6d6",
-        "sha_win": "4361fc18faaf70a2dc342c219b13c39a8196e9a48e6897d08c7b0dca6ba6525d"
-      },
-      "emscripten_release_hash": "bd0a2e230466dadb36efc71aa7271f17c6c35420",
-      "llvm_inference": {
-        "anchor_release": "3.1.46",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 16,
-      "llvm_version_estimate": "16.0.6"
-    },
-    "3.1.5": {
-      "binary_checksums": {
-        "sha_linux": "6641703b7da1805aa5a8488d231ae7fedfe27f1a5a33e7d05a2ee5902ab84180",
-        "sha_mac": "9dba57f09702a7eed53f3f71cdd8a4ed1202ca5a5f4449249c2d98a285b26f75",
-        "sha_mac_arm64": "0093b4d47c9eb9c8bab5b3048c68855255b5e5a8bfd78f4183424009489327e6",
-        "sha_win": "849edc42b494f670df4763dbc8ebbb5464ac28787482668c3f6e27588a77cb3a"
-      },
-      "emscripten_release_hash": "2dee36c7163f7394ab9341854ef5281501dd97d0",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.50": {
-      "binary_checksums": {
-        "sha_linux": "8822050b999286694cd4ffc7d959a8ea3137e3a910121d78b5377439ede9b598",
-        "sha_mac": "39ce2f689be348b558df9c2c988b03472d43f8ac0827624397f7c0bb56a1e893",
-        "sha_mac_arm64": "5a9fa8de121db400bb46e716d861283b938ad87257d7c48f99dd5557100bd3ea",
-        "sha_win": "29096f5596d93dbf620a9547fd1ecec8f54f3f52d49b13f09959d852310220db"
-      },
-      "emscripten_release_hash": "2ce4170cef5ce46f337f9fd907b614a8db772c7d",
-      "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "explicit"
-      },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
-    },
-    "3.1.51": {
-      "binary_checksums": {
-        "sha_linux": "09af08eb562cccf85770e4b8e368acb5accb1759fe3bc436b8fad80c27f90c79",
-        "sha_mac": "b12201caf9ff2b981349edebd2d2c022ff000c74241ef96305b831abbd4f9450",
-        "sha_mac_arm64": "65fbee020cf965f9216607bad56215795529cbe8cef318fadcb33141dd6b5e82",
-        "sha_win": "65c2d005a6be80723fa795ea724d4db9960601cf7d59d880f2882ecd45c8ad2b"
-      },
-      "emscripten_release_hash": "4f416d92fbff66ce79901cfc8263768f1b25dd3e",
-      "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
-    },
     "3.1.52": {
       "binary_checksums": {
         "sha_linux": "1c0cd572067c6348cea5e347b9ef7c5460493ca3f0d84bb991689731d0e140ef",
@@ -750,11 +32,13 @@
       },
       "emscripten_release_hash": "ce2097fb81953331e65543c20b437475f218127c",
       "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.52"
       },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
+      "llvm_major_estimate": 18,
+      "llvm_version_estimate": "18.0.0",
+      "llvm_commit_hash": "0a3a0ea5914cb4633f4f4c14f1ddc46ce067061a",
+      "llvm_commit_date": "2024-01-18"
     },
     "3.1.53": {
       "binary_checksums": {
@@ -765,11 +49,13 @@
       },
       "emscripten_release_hash": "e5523d57a0e0dcf80f3b101bbc23613fcc3101aa",
       "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.53"
       },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "febb4c42b192ed7c88c17f91cb903a59acf20baf",
+      "llvm_commit_date": "2024-01-29"
     },
     "3.1.54": {
       "binary_checksums": {
@@ -780,11 +66,13 @@
       },
       "emscripten_release_hash": "aa1588cd28c250a60457b5ed342557c762f416e3",
       "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.54"
       },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "e769fb8699e3fa8e40623764f7713bfc783b0330",
+      "llvm_commit_date": "2024-02-15"
     },
     "3.1.55": {
       "binary_checksums": {
@@ -795,11 +83,13 @@
       },
       "emscripten_release_hash": "f5557e3b7166d05bddb5977e363ec48cd06e9d32",
       "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.55"
       },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "6c7805d5d186a6d1263f90b8033ad85e2d2633d7",
+      "llvm_commit_date": "2024-02-29"
     },
     "3.1.56": {
       "binary_checksums": {
@@ -810,11 +100,11 @@
       },
       "emscripten_release_hash": "9d106be887796484c4aaffc9dc45f48a8810f336",
       "llvm_inference": {
-        "anchor_release": "3.1.50",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.56"
       },
-      "llvm_major_estimate": 17,
-      "llvm_version_estimate": "17.0.4"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0"
     },
     "3.1.57": {
       "binary_checksums": {
@@ -826,11 +116,11 @@
       },
       "emscripten_release_hash": "523b29e1b99a61069a2fa9f9d3cc9be1c4c53d4d",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.57"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0"
     },
     "3.1.58": {
       "binary_checksums": {
@@ -842,11 +132,11 @@
       },
       "emscripten_release_hash": "a4d4afb626c5010f6ccda4638b8d77579a63782e",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.58"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0"
     },
     "3.1.59": {
       "binary_checksums": {
@@ -858,26 +148,11 @@
       },
       "emscripten_release_hash": "e20ee09a8a740544c4bc6de5d4ba5f81f74b74d6",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.59"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
-    },
-    "3.1.6": {
-      "binary_checksums": {
-        "sha_linux": "f43dfe707dff18fa7a08dbfe2fa3f8d46afb65ccba9bbe554465d83d5d80e388",
-        "sha_mac": "13a01080ff042560b9a9b1b2c9fc5f8c154710bc41db8bbd907a9e53c286afd0",
-        "sha_mac_arm64": "7ae97e85593b037c345b539e7f8b8952b82c001be982219060c83f0834bb6827",
-        "sha_win": "e7005c0a5439e532cb64f34ba90405792288a1ed8845cdafcedd3de5af6fd3f2"
-      },
-      "emscripten_release_hash": "8791c3e936141cbc2dd72d76290ea9b2726d39f3",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0"
     },
     "3.1.60": {
       "binary_checksums": {
@@ -889,11 +164,13 @@
       },
       "emscripten_release_hash": "87709b5747de5b1993fe314285528bf4b65c23e1",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.60"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "bc9823cf60bf91cc8b45248c4205cd2c67b2a3d5",
+      "llvm_commit_date": "2024-05-17"
     },
     "3.1.61": {
       "binary_checksums": {
@@ -905,11 +182,13 @@
       },
       "emscripten_release_hash": "28e4a74b579b4157bda5fc34f23c7d3905a8bd6c",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.61"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "7cfffe74eeb68fbb3fb9706ac7071f8caeeb6520",
+      "llvm_commit_date": "2024-05-30"
     },
     "3.1.62": {
       "binary_checksums": {
@@ -921,11 +200,13 @@
       },
       "emscripten_release_hash": "d52176ac8e07c47c1773bb2776ebd91e3886c3af",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.62"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "c00ada070207979f092be9046a02fcfff8b9f9ce",
+      "llvm_commit_date": "2024-06-29"
     },
     "3.1.63": {
       "binary_checksums": {
@@ -937,11 +218,13 @@
       },
       "emscripten_release_hash": "aeb36a44b29e8ca9f4c7efbb4735b69003ac2bb9",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.63"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "f6712d27874004835170e6eb8ff5f348a8866057",
+      "llvm_commit_date": "2024-07-09"
     },
     "3.1.64": {
       "binary_checksums": {
@@ -953,11 +236,13 @@
       },
       "emscripten_release_hash": "fd61bacaf40131f74987e649a135f1dd559aff60",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.64"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 19,
+      "llvm_version_estimate": "19.0.0",
+      "llvm_commit_hash": "4d8e42ea6a89c73f90941fd1b6e899912e31dd34",
+      "llvm_commit_date": "2024-07-20"
     },
     "3.1.65": {
       "binary_checksums": {
@@ -969,11 +254,13 @@
       },
       "emscripten_release_hash": "fdcf56c75a1d27fdff6525a7e03423595485ca19",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.65"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "547917aebd1e79a8929b53f0ddf3b5185ee4df74",
+      "llvm_commit_date": "2024-08-22"
     },
     "3.1.66": {
       "binary_checksums": {
@@ -985,11 +272,11 @@
       },
       "emscripten_release_hash": "243eae09cf5c20c4fde51a620b92f483255c8214",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.66"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0"
     },
     "3.1.67": {
       "binary_checksums": {
@@ -1001,11 +288,11 @@
       },
       "emscripten_release_hash": "4ae62984ea36ef0e5bfcbd0ed9b62f04bee6426a",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.67"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0"
     },
     "3.1.68": {
       "binary_checksums": {
@@ -1017,11 +304,11 @@
       },
       "emscripten_release_hash": "b52d8c9150dc7d4c8e4a7a08c7a9b4006c9abe49",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.68"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0"
     },
     "3.1.69": {
       "binary_checksums": {
@@ -1033,26 +320,11 @@
       },
       "emscripten_release_hash": "8fe01288bc35668c13316324336ea00195dfb814",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.69"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
-    },
-    "3.1.7": {
-      "binary_checksums": {
-        "sha_linux": "d941738a3c755d6d530bab66d38325515b9dbaa588d2db2b8a63b2a8a1961e52",
-        "sha_mac": "597aacdb25d422094427014d3a97e8b91ec80df2255a66e0986414bf71aaf37d",
-        "sha_mac_arm64": "a0b2db0269c55e854d1007a59f95b8e5f14d32309e76f985ea9afe481b2bd6e6",
-        "sha_win": "cb44339db27b694862efb37539d41eaff7253c93c0882cf7d9aaf4afeaa82912"
-      },
-      "emscripten_release_hash": "d0e637fe48197587d981f79e8114757731d0c2a9",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0"
     },
     "3.1.70": {
       "binary_checksums": {
@@ -1064,11 +336,13 @@
       },
       "emscripten_release_hash": "6fa6145af41e835f3d13edf7d308c08e4573357a",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.70"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "f52b89561f2d929c0c6f37fd818229fbcad3b26c",
+      "llvm_commit_date": "2024-10-24"
     },
     "3.1.71": {
       "binary_checksums": {
@@ -1080,11 +354,13 @@
       },
       "emscripten_release_hash": "7ee0f9488f152e9e9cf0d4d243970e03742f1a5c",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.71"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "d6344c1cd0d099f8d99ee320f33fc9254dbe8288",
+      "llvm_commit_date": "2024-11-04"
     },
     "3.1.72": {
       "binary_checksums": {
@@ -1096,11 +372,13 @@
       },
       "emscripten_release_hash": "7a360458327cd24c2a7aab428bdbcb5bca8810e4",
       "llvm_inference": {
-        "anchor_release": "3.1.57",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.72"
       },
-      "llvm_major_estimate": 18,
-      "llvm_version_estimate": "18.1.2"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "1c4caece05f1885ba6ed80755d6b5de1b9f99579",
+      "llvm_commit_date": "2024-11-18"
     },
     "3.1.73": {
       "binary_checksums": {
@@ -1112,11 +390,13 @@
       },
       "emscripten_release_hash": "b363a836e75a245c548b7a6a021822d8c9e4c6df",
       "llvm_inference": {
-        "anchor_release": "3.1.73",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.73"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.4"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "1d810ece2b2c8fab77720493864257f0ea3336a9",
+      "llvm_commit_date": "2024-11-27"
     },
     "3.1.74": {
       "binary_checksums": {
@@ -1128,41 +408,13 @@
       },
       "emscripten_release_hash": "c2655005234810c7c42e02a18e4696554abe0352",
       "llvm_inference": {
-        "anchor_release": "3.1.73",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "3.1.74"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.4"
-    },
-    "3.1.8": {
-      "binary_checksums": {
-        "sha_linux": "6b170777eb523e62972ad458e533b1853cd0c4e02f6f2cf4cd68e109499ccd9b",
-        "sha_mac": "ede01fe160c3b8443f53f94dbad530e0e7e8197a1b874c7bb9038b187279080c",
-        "sha_mac_arm64": "9ecc8678f948875e7f64defeababc0320f98e103547f395c390c01d76e5a1d64",
-        "sha_win": "039d27d4ae43b50d0858dbc4dcf412f572351e98e1056d7fdcdf2aab1740557e"
-      },
-      "emscripten_release_hash": "8c9e0a76ebed2c5e88a718d43e8b62452def3771",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
-    },
-    "3.1.9": {
-      "binary_checksums": {
-        "sha_linux": "89fa75c981e47ad19942b8236d2604b2666dfd516a08626aaa1bfb0d657c87bf",
-        "sha_mac": "6c7f59dd84d1484f1dfa041d71cc79fc97db8d15834b6220e5868bd9bd373a24",
-        "sha_mac_arm64": "13a258de0daaa3c09a53e21a67414cbf5fa5706f955767fe791a059ed5eb90bf",
-        "sha_win": "0857b03919b948558f9a57d15cf2b220852cc070359c386da0e6e4831c7ac5e0"
-      },
-      "emscripten_release_hash": "edabe25af34554d19c046078f853999b074259ca",
-      "llvm_inference": {
-        "anchor_release": null,
-        "mode": "unknown"
-      },
-      "llvm_major_estimate": null,
-      "llvm_version_estimate": null
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "322eb1a92e6d4266184060346616fa0dbe39e731",
+      "llvm_commit_date": "2024-12-10"
     },
     "4.0.0": {
       "binary_checksums": {
@@ -1174,11 +426,13 @@
       },
       "emscripten_release_hash": "3ebc04a3dab24522a5bf8ced3ce3caea816558f6",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.0"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 20,
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": "322eb1a92e6d4266184060346616fa0dbe39e731",
+      "llvm_commit_date": "2024-12-10"
     },
     "4.0.1": {
       "binary_checksums": {
@@ -1190,171 +444,13 @@
       },
       "emscripten_release_hash": "5ff495a591978fdf8a16f2d172be3616f3150d1e",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
-    },
-    "4.0.10": {
-      "binary_checksums": {
-        "sha_linux": "0183f887b56c3f8d4b45826cb49856a3324afb66236ad3c13944c0fd2550cbbc",
-        "sha_linux_arm64": "0679f459118d80163d0712b0abda00cbc97a90cddf1dcefa9efb1bf89f67baed",
-        "sha_mac": "02f3179f703b4d196a679897b430c1eeeb1d5f9aeba9b435b04ba3f526f7e8e0",
-        "sha_mac_arm64": "c744ffe06ffed55cd8dae42862b7646f15550c7decd47a48d09a474af83732b0",
-        "sha_win": "1a66825e85fda039f57d39c98ae2bdb96a18e53745159e9599f69679be18439f"
-      },
-      "emscripten_release_hash": "8103ffedfb0c42d231c6af6859a5a1a832260b43",
-      "llvm_inference": {
-        "anchor_release": "4.0.10",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.1"
       },
       "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.4"
-    },
-    "4.0.11": {
-      "binary_checksums": {
-        "sha_linux": "f38e70b53be587e7c757f375b3452e259c70130d4b40db3213c95b7ae321f5d7",
-        "sha_linux_arm64": "42020e4db200ac366a3e91ac2fccc04ee0ffc090cd2d5986c892b27f39172bb9",
-        "sha_mac": "4169811f9682f54ae5c9d0662d0a4dd4318abab5d3d0473fa54007f515a8cdea",
-        "sha_mac_arm64": "09554371e3941306d047d67618532e5366ba6c9b5bda1a504a917bfbabc5d414",
-        "sha_win": "bd2094ca9bde5df25020a46ece7f56b622d1d22214fbd12950b01b952dd40084"
-      },
-      "emscripten_release_hash": "7033fec38817ec01909b044ea0193ddd5057255c",
-      "llvm_inference": {
-        "anchor_release": "4.0.10",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.4"
-    },
-    "4.0.12": {
-      "binary_checksums": {
-        "sha_linux": "1c303712707a91b88f743b0ad6dd1544c289e614844396698a2510a66c5608f1",
-        "sha_linux_arm64": "2c503d031d2ad2b13c6e4fe09f104fe50c5d1319feaa2b3d19d4e4608435fbb8",
-        "sha_mac": "c85830f151ec8eebec6bb2344e3eed942bc7b5dc91b146326635f9f71af459f2",
-        "sha_mac_arm64": "853dff1a8451b54ff7cdd95f923851dd9b58ab36873b7b600d16243a5fb6d907",
-        "sha_win": "7b7e58fbd35a78ddf9a2a4a3f6215857bf2342942c429cdf540a2251540cb845"
-      },
-      "emscripten_release_hash": "209b886304498eff50dd835850dc5715803401ed",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "explicit"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.13": {
-      "binary_checksums": {
-        "sha_linux": "2ad887035e3e5cac78abcaeca3b3881897f03b9919d008cbc0ef41d7641247c9",
-        "sha_linux_arm64": "675156bd626c7b19d4f2271ea8ffa77a235d9b0a031116632e53b374cf23754c",
-        "sha_mac": "657cbd01e84f0a33cb7a1379baecd18a7d96883222a3a99b43919d8bb2374f55",
-        "sha_mac_arm64": "12ac26e298ef973207eba9332e28da375ec2ba1d32e68e0d8b32de3c886a2e39",
-        "sha_win": "a363d6e92dcaf0024d378f1faabb61a139d9152a796f66a475a48e33e90f6adb"
-      },
-      "emscripten_release_hash": "32b8ae819674cb42b8ac2191afeb9571e33ad5e2",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.14": {
-      "binary_checksums": {
-        "sha_linux": "4f83b1ef38c4d4c6df1ad6d9ae9970fb1f4bda7342c5860868d1825f4460b27c",
-        "sha_linux_arm64": "ddb831fd4ba096d58c638f44a887f7dcb925d3a1befc95d43c69db5ad3c2d81b",
-        "sha_mac": "2e73d422b5fd54cfe188151fe4a19651fdad2d47614d1d7eee5adc124cfc2dc9",
-        "sha_mac_arm64": "4e01d07b379257e30e6daf61d171015e578a5eb004c7113eda964b181313c4b0",
-        "sha_win": "b67f5027dd9f9e51bdcf0b8bd2da5203a45b4b3338a0e288ee43e186375a91ae"
-      },
-      "emscripten_release_hash": "4658718c188782acc67a249d45fce2d891ee3cc1",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.15": {
-      "binary_checksums": {
-        "sha_linux": "c0ed25c30e1d747072de0c9053cde27ca83a8d2424e8bc6b7d39dccf42fcba35",
-        "sha_linux_arm64": "1e250570d0ea7a3112f65ca0f31031793aa836d968dfc88323b7826d737c1b81",
-        "sha_mac": "b34bb7fb7a49fe9427a62521685980cc8739a290cdbbba9b00bdb581338b2111",
-        "sha_mac_arm64": "1669390cc812bdebc234f3ce7e5c2f90076e5b6ca52a0822be52d5638b15a380",
-        "sha_win": "726046170075416370af4f13276990dde9560a844c14ece74912fce6fffd03da"
-      },
-      "emscripten_release_hash": "b412b6307e541b93dd93f01b61181e15c17302ec",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.16": {
-      "binary_checksums": {
-        "sha_linux": "c1ad0e9259eec965eb9724bbe5ca3fce45939da58d840f9eda71c52f83447561",
-        "sha_linux_arm64": "295cd1406ac584c92ce58f01ad2ae813893932c26eb7201caaeca45d3c6f8a9d",
-        "sha_mac": "ee29be60e98ea37446b839dc46049c04a7efce7b60b7737423d36051dbb630b2",
-        "sha_mac_arm64": "f8d06789195f0c3b07d7f241b11f2aed9099f3e3ba69dd0fb85a93b9edcfec45",
-        "sha_win": "e3cc92b6b55604fd9c2017a7659cd5ecc234e9522f9bfccb1454130c6189e309"
-      },
-      "emscripten_release_hash": "e68ea3dc5ca3eda4e2bba62359b033074e506925",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.17": {
-      "binary_checksums": {
-        "sha_linux": "5e4269ab4d4dd97da93f2833bb97780ef6ddee9a7325d345587bddf8890d89aa",
-        "sha_linux_arm64": "2ca54b47a73f1f6687e33b3494748f52d753e2e21b9db505e358d362da4794bb",
-        "sha_mac": "d574a26c775b4f737a6960871340b4cdb04eefe44f6fd3a5072c62e86837c1fe",
-        "sha_mac_arm64": "8a571a73461d7755787fc5ffb35b7284216741cfbbcf52d855d54d2cc36ecb9e",
-        "sha_win": "a394e719b3258ca7502cb85c9f1031b356ec41f511a187f79bb50b91678aae75"
-      },
-      "emscripten_release_hash": "41d2106c68c28e101e6252a48e22c78b07722508",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.18": {
-      "binary_checksums": {
-        "sha_linux": "38148e69fd718e81de6edc3bc03b1851da436b145caa3c90544f128279eaac75",
-        "sha_linux_arm64": "9b86ffc6185d4367718d679db2bcc0dadb64f8caffbfadf3db93d9d1ae5ab34c",
-        "sha_mac": "c6ab987445e37632202253b15b871628385f281e85d54a36a4f7357fd3a3f4bb",
-        "sha_mac_arm64": "762cda293d5737414c12d0a1d09e765d22dea3944c032aa56d98d3a37abc02ea",
-        "sha_win": "c80405bd2898051de00869f31568c3217ebc8d9cba33a18f8c01e8bb3c4b4f7b"
-      },
-      "emscripten_release_hash": "df7d4d811503e86e7728326e3eabbc383cb8042d",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.19": {
-      "binary_checksums": {
-        "sha_linux": "f83aa5ee648a4591ddbfcbd19a3040056c9c5a846adb2b9c342b37f2dd557f82",
-        "sha_linux_arm64": "75c040b3463e58ba1fc15c18878327ef678a5f64621378cf2899aa4cf54c1dab",
-        "sha_mac": "b6492abede5c1569d46044e750ed20e3e081e8a1c480913892cf5b9d84a5027c",
-        "sha_mac_arm64": "5e522c7c03b83929a1d2a2321d8e5cc8fe3d0f0aeb05d1d26213b52008494731",
-        "sha_win": "39078e88c6d29e6a09892df2d6440df4f47f78292377b89174ea209b1188a6f9"
-      },
-      "emscripten_release_hash": "8b01e2ec3f33e6b94842096d7312ce4ef5f33f6c",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
+      "llvm_version_estimate": "20.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
     },
     "4.0.2": {
       "binary_checksums": {
@@ -1366,75 +462,13 @@
       },
       "emscripten_release_hash": "cc8eba40de8235f9c33d92463018f87b3edaa09e",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.2"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
-    },
-    "4.0.20": {
-      "binary_checksums": {
-        "sha_linux": "a06e7ddda0c168f7ad52e6e0509c98db3545dcb254d3b9052e9e6b8423eaee7d",
-        "sha_linux_arm64": "a42862782c1d23330d2f55936e451f54ed4a630f9d7430ffd1936dc6967a29d1",
-        "sha_mac": "6c4e8445a8e47e55fcd99789ec023d614c8dbd916afe64e9feb7a292c5070cd2",
-        "sha_mac_arm64": "144433e905ec1db726df9128e99624b9b4a3716e96dfb37dde22e2294a675c07",
-        "sha_win": "388e9fab2bc9f94e85b1541e6ae0f1d9a5b9dfa9d756d89a0a3fc7acc052fbd5"
-      },
-      "emscripten_release_hash": "c387d7a7e9537d0041d2c3ae71b7538cc978104e",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.21": {
-      "binary_checksums": {
-        "sha_linux": "e8516b903cd4dc16bf5aa2aacd826adcff5ff1d97d3d88e5e3871decd94cd8b2",
-        "sha_linux_arm64": "415024a22f84424c713b117c3a24cefb98ec03737e02063074010fdc8eaeb334",
-        "sha_mac": "f17989b3528cd14971fe75ae9b2aa7d8cc4cc5bbb6d408660e059f822e108a46",
-        "sha_mac_arm64": "7960d8d33243f2f7acdac157136c6e93680550361ed71bb225fcfa25b6bbb2fb",
-        "sha_win": "79b3a6b77cf8015cc07ad25353f17f1828e731b0d8757a046071fffbdd5aaf70"
-      },
-      "emscripten_release_hash": "d70a5da89b3e673bf6a482724478fc17e81e575e",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.22": {
-      "binary_checksums": {
-        "sha_linux": "81219e78defb2f46d12a67a2fa6d128344d850f1e4375b173a324036236b40ef",
-        "sha_linux_arm64": "5bff19114edb410863634b14e3f459e7d90dc5339f7e5c7bdd5a946356b1dd54",
-        "sha_mac": "a40cfb7c4c4f8cac9c6521475abca80f20986c8c438d46ac745bb4316d838a30",
-        "sha_mac_arm64": "1a3fb183385682e790cf617824681dc72c2b30e8db2afc9189d0dadea9ccd466",
-        "sha_win": "4a29b0bdc3d477ce39a9e6cd508f16dc19ea1bf861a66c1d715e0264ab550e45"
-      },
-      "emscripten_release_hash": "bebaf7e50e31865b0724f17eaa52e161e2dfef5a",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
-    },
-    "4.0.23": {
-      "binary_checksums": {
-        "sha_linux": "5f1565fe45a1223cedf3b0300f5089c2c64954d2895b2aaedc85043c719be965",
-        "sha_linux_arm64": "d8ed075930b397d3aed8a1c7558db1918ade786349b07d5c042dfa7f65f78563",
-        "sha_mac": "5823ef26fd45b5a960960fb53026513d43922eac7a1e3ba12d1344d7a94699f9",
-        "sha_mac_arm64": "54234e108d6612eca5dc9280d1779ccec3d49ad4d8c8562a6b2046b0a5a8d5d4",
-        "sha_win": "c2e1b9a2eed20f9d5903780b559ce2b384132713f07936512e6d962dd5a5dae6"
-      },
-      "emscripten_release_hash": "aaa43392544d695232b70eda706d751f18980c2a",
-      "llvm_inference": {
-        "anchor_release": "4.0.12",
-        "mode": "forward_fill"
-      },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.8"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "9534d27e3321a3b9e6e79fe6328445575bf26b7b",
+      "llvm_commit_date": "2025-01-29"
     },
     "4.0.3": {
       "binary_checksums": {
@@ -1446,11 +480,13 @@
       },
       "emscripten_release_hash": "de2109f0e5e7278d470da11de526aed16c527722",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.3"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "6dc41a639334b913e762f65410fcd14a722b137f",
+      "llvm_commit_date": "2025-02-06"
     },
     "4.0.4": {
       "binary_checksums": {
@@ -1462,11 +498,13 @@
       },
       "emscripten_release_hash": "ea71afcf5a172125179a07ff1731de6e81c92222",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.4"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "148111fdcf0e807fe74274b18fcf65c4cff45d63",
+      "llvm_commit_date": "2025-02-25"
     },
     "4.0.5": {
       "binary_checksums": {
@@ -1478,11 +516,13 @@
       },
       "emscripten_release_hash": "d7f8ff5e2ca3539c33fae81e98f7c56ef9fa1239",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.5"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
     },
     "4.0.6": {
       "binary_checksums": {
@@ -1494,11 +534,13 @@
       },
       "emscripten_release_hash": "14767574a5c37ff9526a253a65ddbe0811cb3667",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.6"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "4775e6d9099467df9363e1a3cd5950cc3d2fde05",
+      "llvm_commit_date": "2025-03-26"
     },
     "4.0.7": {
       "binary_checksums": {
@@ -1510,11 +552,13 @@
       },
       "emscripten_release_hash": "ef4e9cedeac3332e4738087567552063f4f250d3",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.7"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "57025b42c43b2f14f7e58692bc19cd53d1b8a45e",
+      "llvm_commit_date": "2025-04-15"
     },
     "4.0.8": {
       "binary_checksums": {
@@ -1526,11 +570,13 @@
       },
       "emscripten_release_hash": "56f86607aeb458086e72f23188789be2ee0e971a",
       "llvm_inference": {
-        "anchor_release": "4.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.8"
       },
-      "llvm_major_estimate": 19,
-      "llvm_version_estimate": "19.1.6"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
     },
     "4.0.9": {
       "binary_checksums": {
@@ -1542,11 +588,265 @@
       },
       "emscripten_release_hash": "cb2a69bce627bd2247624c71fc12907cb8785d2f",
       "llvm_inference": {
-        "anchor_release": "4.0.9",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "4.0.9"
       },
-      "llvm_major_estimate": 20,
-      "llvm_version_estimate": "20.1.4"
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "2f05451198e2f222ec66cec4892ada0509519290",
+      "llvm_commit_date": "2025-05-17"
+    },
+    "4.0.10": {
+      "binary_checksums": {
+        "sha_linux": "0183f887b56c3f8d4b45826cb49856a3324afb66236ad3c13944c0fd2550cbbc",
+        "sha_linux_arm64": "0679f459118d80163d0712b0abda00cbc97a90cddf1dcefa9efb1bf89f67baed",
+        "sha_mac": "02f3179f703b4d196a679897b430c1eeeb1d5f9aeba9b435b04ba3f526f7e8e0",
+        "sha_mac_arm64": "c744ffe06ffed55cd8dae42862b7646f15550c7decd47a48d09a474af83732b0",
+        "sha_win": "1a66825e85fda039f57d39c98ae2bdb96a18e53745159e9599f69679be18439f"
+      },
+      "emscripten_release_hash": "8103ffedfb0c42d231c6af6859a5a1a832260b43",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.10"
+      },
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
+    },
+    "4.0.11": {
+      "binary_checksums": {
+        "sha_linux": "f38e70b53be587e7c757f375b3452e259c70130d4b40db3213c95b7ae321f5d7",
+        "sha_linux_arm64": "42020e4db200ac366a3e91ac2fccc04ee0ffc090cd2d5986c892b27f39172bb9",
+        "sha_mac": "4169811f9682f54ae5c9d0662d0a4dd4318abab5d3d0473fa54007f515a8cdea",
+        "sha_mac_arm64": "09554371e3941306d047d67618532e5366ba6c9b5bda1a504a917bfbabc5d414",
+        "sha_win": "bd2094ca9bde5df25020a46ece7f56b622d1d22214fbd12950b01b952dd40084"
+      },
+      "emscripten_release_hash": "7033fec38817ec01909b044ea0193ddd5057255c",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.11"
+      },
+      "llvm_major_estimate": 21,
+      "llvm_version_estimate": "21.0.0",
+      "llvm_commit_hash": "0f0079c29da4b4d5bbd43dced1db9ad6c6d11008",
+      "llvm_commit_date": "2025-07-11"
+    },
+    "4.0.12": {
+      "binary_checksums": {
+        "sha_linux": "1c303712707a91b88f743b0ad6dd1544c289e614844396698a2510a66c5608f1",
+        "sha_linux_arm64": "2c503d031d2ad2b13c6e4fe09f104fe50c5d1319feaa2b3d19d4e4608435fbb8",
+        "sha_mac": "c85830f151ec8eebec6bb2344e3eed942bc7b5dc91b146326635f9f71af459f2",
+        "sha_mac_arm64": "853dff1a8451b54ff7cdd95f923851dd9b58ab36873b7b600d16243a5fb6d907",
+        "sha_win": "7b7e58fbd35a78ddf9a2a4a3f6215857bf2342942c429cdf540a2251540cb845"
+      },
+      "emscripten_release_hash": "209b886304498eff50dd835850dc5715803401ed",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.12"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "7f93487862d98bf1c168babba87daf6224d8a46f",
+      "llvm_commit_date": "2025-07-31"
+    },
+    "4.0.13": {
+      "binary_checksums": {
+        "sha_linux": "2ad887035e3e5cac78abcaeca3b3881897f03b9919d008cbc0ef41d7641247c9",
+        "sha_linux_arm64": "675156bd626c7b19d4f2271ea8ffa77a235d9b0a031116632e53b374cf23754c",
+        "sha_mac": "657cbd01e84f0a33cb7a1379baecd18a7d96883222a3a99b43919d8bb2374f55",
+        "sha_mac_arm64": "12ac26e298ef973207eba9332e28da375ec2ba1d32e68e0d8b32de3c886a2e39",
+        "sha_win": "a363d6e92dcaf0024d378f1faabb61a139d9152a796f66a475a48e33e90f6adb"
+      },
+      "emscripten_release_hash": "32b8ae819674cb42b8ac2191afeb9571e33ad5e2",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.13"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "177f27d22092cb64e871e6cd2f8981d24e823186",
+      "llvm_commit_date": "2025-08-14"
+    },
+    "4.0.14": {
+      "binary_checksums": {
+        "sha_linux": "4f83b1ef38c4d4c6df1ad6d9ae9970fb1f4bda7342c5860868d1825f4460b27c",
+        "sha_linux_arm64": "ddb831fd4ba096d58c638f44a887f7dcb925d3a1befc95d43c69db5ad3c2d81b",
+        "sha_mac": "2e73d422b5fd54cfe188151fe4a19651fdad2d47614d1d7eee5adc124cfc2dc9",
+        "sha_mac_arm64": "4e01d07b379257e30e6daf61d171015e578a5eb004c7113eda964b181313c4b0",
+        "sha_win": "b67f5027dd9f9e51bdcf0b8bd2da5203a45b4b3338a0e288ee43e186375a91ae"
+      },
+      "emscripten_release_hash": "4658718c188782acc67a249d45fce2d891ee3cc1",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.14"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "1cc84bcc08f723a6ba9d845c3fed1777547f45f9",
+      "llvm_commit_date": "2025-09-02"
+    },
+    "4.0.15": {
+      "binary_checksums": {
+        "sha_linux": "c0ed25c30e1d747072de0c9053cde27ca83a8d2424e8bc6b7d39dccf42fcba35",
+        "sha_linux_arm64": "1e250570d0ea7a3112f65ca0f31031793aa836d968dfc88323b7826d737c1b81",
+        "sha_mac": "b34bb7fb7a49fe9427a62521685980cc8739a290cdbbba9b00bdb581338b2111",
+        "sha_mac_arm64": "1669390cc812bdebc234f3ce7e5c2f90076e5b6ca52a0822be52d5638b15a380",
+        "sha_win": "726046170075416370af4f13276990dde9560a844c14ece74912fce6fffd03da"
+      },
+      "emscripten_release_hash": "b412b6307e541b93dd93f01b61181e15c17302ec",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.15"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "3388d40684742e950b3c5d1d2dafe5a40695cfc1",
+      "llvm_commit_date": "2025-09-16"
+    },
+    "4.0.16": {
+      "binary_checksums": {
+        "sha_linux": "c1ad0e9259eec965eb9724bbe5ca3fce45939da58d840f9eda71c52f83447561",
+        "sha_linux_arm64": "295cd1406ac584c92ce58f01ad2ae813893932c26eb7201caaeca45d3c6f8a9d",
+        "sha_mac": "ee29be60e98ea37446b839dc46049c04a7efce7b60b7737423d36051dbb630b2",
+        "sha_mac_arm64": "f8d06789195f0c3b07d7f241b11f2aed9099f3e3ba69dd0fb85a93b9edcfec45",
+        "sha_win": "e3cc92b6b55604fd9c2017a7659cd5ecc234e9522f9bfccb1454130c6189e309"
+      },
+      "emscripten_release_hash": "e68ea3dc5ca3eda4e2bba62359b033074e506925",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.16"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
+    },
+    "4.0.17": {
+      "binary_checksums": {
+        "sha_linux": "5e4269ab4d4dd97da93f2833bb97780ef6ddee9a7325d345587bddf8890d89aa",
+        "sha_linux_arm64": "2ca54b47a73f1f6687e33b3494748f52d753e2e21b9db505e358d362da4794bb",
+        "sha_mac": "d574a26c775b4f737a6960871340b4cdb04eefe44f6fd3a5072c62e86837c1fe",
+        "sha_mac_arm64": "8a571a73461d7755787fc5ffb35b7284216741cfbbcf52d855d54d2cc36ecb9e",
+        "sha_win": "a394e719b3258ca7502cb85c9f1031b356ec41f511a187f79bb50b91678aae75"
+      },
+      "emscripten_release_hash": "41d2106c68c28e101e6252a48e22c78b07722508",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.17"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "997560090e791558ca41ff3e5f4eec717102046c",
+      "llvm_commit_date": "2025-10-17"
+    },
+    "4.0.18": {
+      "binary_checksums": {
+        "sha_linux": "38148e69fd718e81de6edc3bc03b1851da436b145caa3c90544f128279eaac75",
+        "sha_linux_arm64": "9b86ffc6185d4367718d679db2bcc0dadb64f8caffbfadf3db93d9d1ae5ab34c",
+        "sha_mac": "c6ab987445e37632202253b15b871628385f281e85d54a36a4f7357fd3a3f4bb",
+        "sha_mac_arm64": "762cda293d5737414c12d0a1d09e765d22dea3944c032aa56d98d3a37abc02ea",
+        "sha_win": "c80405bd2898051de00869f31568c3217ebc8d9cba33a18f8c01e8bb3c4b4f7b"
+      },
+      "emscripten_release_hash": "df7d4d811503e86e7728326e3eabbc383cb8042d",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.18"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
+    },
+    "4.0.19": {
+      "binary_checksums": {
+        "sha_linux": "f83aa5ee648a4591ddbfcbd19a3040056c9c5a846adb2b9c342b37f2dd557f82",
+        "sha_linux_arm64": "75c040b3463e58ba1fc15c18878327ef678a5f64621378cf2899aa4cf54c1dab",
+        "sha_mac": "b6492abede5c1569d46044e750ed20e3e081e8a1c480913892cf5b9d84a5027c",
+        "sha_mac_arm64": "5e522c7c03b83929a1d2a2321d8e5cc8fe3d0f0aeb05d1d26213b52008494731",
+        "sha_win": "39078e88c6d29e6a09892df2d6440df4f47f78292377b89174ea209b1188a6f9"
+      },
+      "emscripten_release_hash": "8b01e2ec3f33e6b94842096d7312ce4ef5f33f6c",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.19"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "12f392cff10fcc70b4ec4f01ab386922742e9136",
+      "llvm_commit_date": "2025-11-04"
+    },
+    "4.0.20": {
+      "binary_checksums": {
+        "sha_linux": "a06e7ddda0c168f7ad52e6e0509c98db3545dcb254d3b9052e9e6b8423eaee7d",
+        "sha_linux_arm64": "a42862782c1d23330d2f55936e451f54ed4a630f9d7430ffd1936dc6967a29d1",
+        "sha_mac": "6c4e8445a8e47e55fcd99789ec023d614c8dbd916afe64e9feb7a292c5070cd2",
+        "sha_mac_arm64": "144433e905ec1db726df9128e99624b9b4a3716e96dfb37dde22e2294a675c07",
+        "sha_win": "388e9fab2bc9f94e85b1541e6ae0f1d9a5b9dfa9d756d89a0a3fc7acc052fbd5"
+      },
+      "emscripten_release_hash": "c387d7a7e9537d0041d2c3ae71b7538cc978104e",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.20"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
+    },
+    "4.0.21": {
+      "binary_checksums": {
+        "sha_linux": "e8516b903cd4dc16bf5aa2aacd826adcff5ff1d97d3d88e5e3871decd94cd8b2",
+        "sha_linux_arm64": "415024a22f84424c713b117c3a24cefb98ec03737e02063074010fdc8eaeb334",
+        "sha_mac": "f17989b3528cd14971fe75ae9b2aa7d8cc4cc5bbb6d408660e059f822e108a46",
+        "sha_mac_arm64": "7960d8d33243f2f7acdac157136c6e93680550361ed71bb225fcfa25b6bbb2fb",
+        "sha_win": "79b3a6b77cf8015cc07ad25353f17f1828e731b0d8757a046071fffbdd5aaf70"
+      },
+      "emscripten_release_hash": "d70a5da89b3e673bf6a482724478fc17e81e575e",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.21"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "60513b8d6ebacde46e8fbe4faf1319ac87e990e3",
+      "llvm_commit_date": "2025-12-01"
+    },
+    "4.0.22": {
+      "binary_checksums": {
+        "sha_linux": "81219e78defb2f46d12a67a2fa6d128344d850f1e4375b173a324036236b40ef",
+        "sha_linux_arm64": "5bff19114edb410863634b14e3f459e7d90dc5339f7e5c7bdd5a946356b1dd54",
+        "sha_mac": "a40cfb7c4c4f8cac9c6521475abca80f20986c8c438d46ac745bb4316d838a30",
+        "sha_mac_arm64": "1a3fb183385682e790cf617824681dc72c2b30e8db2afc9189d0dadea9ccd466",
+        "sha_win": "4a29b0bdc3d477ce39a9e6cd508f16dc19ea1bf861a66c1d715e0264ab550e45"
+      },
+      "emscripten_release_hash": "bebaf7e50e31865b0724f17eaa52e161e2dfef5a",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.22"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": "c7706d9472fe880ba1d3418919ad4185710c9559",
+      "llvm_commit_date": "2025-12-17"
+    },
+    "4.0.23": {
+      "binary_checksums": {
+        "sha_linux": "5f1565fe45a1223cedf3b0300f5089c2c64954d2895b2aaedc85043c719be965",
+        "sha_linux_arm64": "d8ed075930b397d3aed8a1c7558db1918ade786349b07d5c042dfa7f65f78563",
+        "sha_mac": "5823ef26fd45b5a960960fb53026513d43922eac7a1e3ba12d1344d7a94699f9",
+        "sha_mac_arm64": "54234e108d6612eca5dc9280d1779ccec3d49ad4d8c8562a6b2046b0a5a8d5d4",
+        "sha_win": "c2e1b9a2eed20f9d5903780b559ce2b384132713f07936512e6d962dd5a5dae6"
+      },
+      "emscripten_release_hash": "aaa43392544d695232b70eda706d751f18980c2a",
+      "llvm_inference": {
+        "mode": "binary-verified",
+        "anchor_release": "4.0.23"
+      },
+      "llvm_major_estimate": 22,
+      "llvm_version_estimate": "22.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
     },
     "5.0.0": {
       "binary_checksums": {
@@ -1558,11 +858,13 @@
       },
       "emscripten_release_hash": "e44d3cc557d78155966478aa2bd8dec657609619",
       "llvm_inference": {
-        "anchor_release": "5.0.0",
-        "mode": "explicit"
+        "mode": "binary-verified",
+        "anchor_release": "5.0.0"
       },
-      "llvm_major_estimate": 21,
-      "llvm_version_estimate": "21.1.8"
+      "llvm_major_estimate": 23,
+      "llvm_version_estimate": "23.0.0",
+      "llvm_commit_hash": "358db292cc6a9a8a5448a296f643312289f328d7",
+      "llvm_commit_date": "2026-01-23"
     },
     "5.0.1": {
       "binary_checksums": {
@@ -1574,11 +876,13 @@
       },
       "emscripten_release_hash": "bf32ae8b61ac8efeb7eca01b54c8307f992724f7",
       "llvm_inference": {
-        "anchor_release": "5.0.0",
-        "mode": "forward_fill"
+        "mode": "binary-verified",
+        "anchor_release": "5.0.1"
       },
-      "llvm_major_estimate": 21,
-      "llvm_version_estimate": "21.1.8"
+      "llvm_major_estimate": 23,
+      "llvm_version_estimate": "23.0.0",
+      "llvm_commit_hash": null,
+      "llvm_commit_date": null
     }
   },
   "sources": {

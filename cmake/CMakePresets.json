@@ -308,10 +308,9 @@
         "CMAKE_OSX_ARCHITECTURES": "arm64",
         "CMAKE_C_FLAGS": "-Xclang -fno-pch-timestamp",
         "CMAKE_CXX_FLAGS": "-Xclang -fno-pch-timestamp",
-        "LLVM_PARALLEL_COMPILE_JOBS": "2",
+        "LLVM_PARALLEL_COMPILE_JOBS": "1",
         "LLVM_PARALLEL_LINK_JOBS": "1",
-        "LLVM_PARALLEL_TABLEGEN_JOBS": "2",
-        "FLANG_PARALLEL_COMPILE_JOBS": "2"
+        "LLVM_PARALLEL_TABLEGEN_JOBS": "2"
       }
     }
   ]
