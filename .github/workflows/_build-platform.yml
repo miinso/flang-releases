@@ -485,7 +485,11 @@ jobs:
         run: |
           set -euo pipefail
           start="$(date +%s)"
-          emcc --generate-config
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            cmd //c emcc --generate-config
+          else
+            emcc --generate-config
+          fi
           "${PYTHON_FOR_TOOLS}" scripts/test-wasm32.py --install-dir=./install --build-dir=./build
           end="$(date +%s)"
           echo "test_wasm32=$((end-start))" >> "$TIMINGS_FILE"
