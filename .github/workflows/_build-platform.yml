@@ -452,6 +452,17 @@ jobs:
         run: |
           (sccache --show-stats || true) > "$SCCACHE_STATS_FILE"
 
+      - name: Publish sccache stats to summary
+        if: ${{ always() && inputs.use_docker }}
+        shell: bash
+        run: |
+          if [ -f "$SCCACHE_STATS_FILE" ]; then
+            echo '### sccache stats (`${{ inputs.platform_id }}`)' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$SCCACHE_STATS_FILE" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Setup Emscripten (Unix)
         if: runner.os != 'Windows'
         shell: bash
