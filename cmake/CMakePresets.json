@@ -238,10 +238,12 @@
       "cacheVariables": {
         "LLVM_DEFAULT_TARGET_TRIPLE": "x86_64-unknown-linux-gnu",
         "LLVM_USE_LINKER": "mold",
+        "LLVM_PARALLEL_LINK_JOBS": "2",
+        "LLVM_PARALLEL_TABLEGEN_JOBS": "4",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-Xclang -fno-pch-timestamp",
-        "CMAKE_CXX_FLAGS": "-Xclang -fno-pch-timestamp",
+        "CMAKE_C_FLAGS": "-Xclang -fno-pch-timestamp -w",
+        "CMAKE_CXX_FLAGS": "-Xclang -fno-pch-timestamp -w",
         "CMAKE_EXE_LINKER_FLAGS": "-static",
         "CMAKE_BUILD_WITH_INSTALL_RPATH": "ON",
 
