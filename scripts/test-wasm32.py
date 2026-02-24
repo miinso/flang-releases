@@ -171,6 +171,49 @@ end program hello
                 print("FAIL: native should use i64")
                 sys.exit(1)
 
+            # Test wasm32 fir.allocmem lowers to malloc(i32) not malloc(i64)
+            alloc_f90 = tmpdir / "alloc_test.f90"
+            alloc_f90.write_text('''\
+function make(n) result(arr)
+  integer, intent(in) :: n
+  real :: arr(n)
+  arr = 1.0
+end function
+
+subroutine caller(n)
+  integer, intent(in) :: n
+  real :: res(n)
+  interface
+    function make(n) result(arr)
+      integer, intent(in) :: n
+      real :: arr(n)
+    end function
+  end interface
+  res = make(n)
+end subroutine
+''')
+
+            alloc_ll = tmpdir / "alloc_wasm.ll"
+            result = run(f'"{flang}" --target=wasm32-unknown-emscripten -S -emit-llvm "{alloc_f90}" -o "{alloc_ll}"')
+            if result.returncode != 0:
+                print("FAIL: Failed to compile allocatable array for wasm32")
+                sys.exit(1)
+
+            alloc_ir = alloc_ll.read_text()
+            print("\nwasm32 malloc IR snippet:")
+            for line in alloc_ir.splitlines():
+                if "malloc" in line.lower():
+                    print(f"  {line}")
+
+            if "declare ptr @malloc(i32)" in alloc_ir:
+                print("PASS: wasm32 malloc uses i32 parameter")
+            else:
+                if "declare ptr @malloc(i64)" in alloc_ir:
+                    print("FAIL: wasm32 malloc uses i64 instead of i32")
+                else:
+                    print("FAIL: malloc declaration not found in IR")
+                sys.exit(1)
+
             # Step 3: End-to-end test
             print("\n" + "=" * 60)
             print("Step 3: End-to-end test (compile, link, run)")
