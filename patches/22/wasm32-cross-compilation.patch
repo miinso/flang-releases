@@ -1,5 +1,5 @@
 diff --git a/flang/include/flang/Optimizer/Builder/Runtime/RTBuilder.h b/flang/include/flang/Optimizer/Builder/Runtime/RTBuilder.h
-index 98d7de81c..ead0797f3 100644
+index 960405ee00..b9a1fb0e2f 100644
 --- a/flang/include/flang/Optimizer/Builder/Runtime/RTBuilder.h
 +++ b/flang/include/flang/Optimizer/Builder/Runtime/RTBuilder.h
 @@ -24,9 +24,12 @@
@@ -34,7 +34,7 @@ index 98d7de81c..ead0797f3 100644
  #define REDUCTION_REF_OPERATION_MODEL(T)                                       \
    template <>                                                                  \
    constexpr TypeBuilderFunc                                                    \
-@@ -698,6 +713,81 @@ getModel<Fortran::runtime::ReductionDerivedTypeOperation>() {
+@@ -725,6 +740,81 @@ getModel<Fortran::runtime::ReductionDerivedTypeOperation>() {
    };
  }
  
@@ -116,7 +116,7 @@ index 98d7de81c..ead0797f3 100644
  template <typename...>
  struct RuntimeTableKey;
  template <typename RT, typename... ATs>
-@@ -715,6 +805,20 @@ struct RuntimeTableKey<RT(ATs...)> {
+@@ -742,6 +832,20 @@ struct RuntimeTableKey<RT(ATs...)> {
        return mlir::FunctionType::get(ctxt, argTys, {retTy});
      };
    }
@@ -137,7 +137,7 @@ index 98d7de81c..ead0797f3 100644
  };
  
  //===----------------------------------------------------------------------===//
-@@ -764,6 +868,11 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
+@@ -791,6 +895,11 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
    static constexpr FuncTypeBuilderFunc getTypeModel() {
      return RuntimeTableKey<KT>::getTypeModel();
    }
@@ -149,7 +149,7 @@ index 98d7de81c..ead0797f3 100644
    static constexpr const char name[sizeof...(Cs) + 1] = {Cs..., '\0'};
  };
  
-@@ -803,8 +912,46 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
+@@ -830,8 +939,46 @@ struct RuntimeTableEntry<RuntimeTableKey<KT>, RuntimeIdentifier<Cs...>> {
  #define mkRTKey(X) FirmkKey(RTNAME(X))
  #define EXPAND_AND_QUOTE_KEY(S) ExpandAndQuoteKey(RTNAME(S))
  
@@ -196,7 +196,7 @@ index 98d7de81c..ead0797f3 100644
  template <typename RuntimeEntry>
  static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
                                           fir::FirOpBuilder &builder,
-@@ -814,7 +961,7 @@ static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
+@@ -841,7 +988,7 @@ static mlir::func::FuncOp getRuntimeFunc(mlir::Location loc,
    auto func = builder.getNamedFunction(name);
    if (func)
      return func;
@@ -206,10 +206,10 @@ index 98d7de81c..ead0797f3 100644
  }
  
 diff --git a/flang/lib/Optimizer/CodeGen/Target.cpp b/flang/lib/Optimizer/CodeGen/Target.cpp
-index 7dbf21ce0..64cffe45e 100644
+index b60a72e434..31fd4bc2bb 100644
 --- a/flang/lib/Optimizer/CodeGen/Target.cpp
 +++ b/flang/lib/Optimizer/CodeGen/Target.cpp
-@@ -1875,6 +1875,44 @@ struct TargetLoongArch64 : public GenericTarget<TargetLoongArch64> {
+@@ -1896,6 +1896,44 @@ struct TargetLoongArch64 : public GenericTarget<TargetLoongArch64> {
  };
  } // namespace
  
@@ -254,7 +254,7 @@ index 7dbf21ce0..64cffe45e 100644
  // Instantiate the overloaded target instance based on the triple value.
  // TODO: Add other targets to this file as needed.
  std::unique_ptr<fir::CodeGenSpecifics>
-@@ -1933,6 +1971,9 @@ fir::CodeGenSpecifics::get(mlir::MLIRContext *ctx, llvm::Triple &&trp,
+@@ -1954,6 +1992,9 @@ fir::CodeGenSpecifics::get(mlir::MLIRContext *ctx, llvm::Triple &&trp,
    case llvm::Triple::ArchType::loongarch64:
      return std::make_unique<TargetLoongArch64>(
          ctx, std::move(trp), std::move(kindMap), targetCPU, targetFeatures, dl);
@@ -264,8 +264,24 @@ index 7dbf21ce0..64cffe45e 100644
    }
    TODO(mlir::UnknownLoc::get(ctx), "target not implemented");
  }
+diff --git a/flang/lib/Optimizer/CodeGen/TypeConverter.cpp b/flang/lib/Optimizer/CodeGen/TypeConverter.cpp
+index 3c4162c4d8..1b7e705270 100644
+--- a/flang/lib/Optimizer/CodeGen/TypeConverter.cpp
++++ b/flang/lib/Optimizer/CodeGen/TypeConverter.cpp
+@@ -144,9 +144,9 @@ mlir::Type LLVMTypeConverter::offsetType() const {
+   return mlir::IntegerType::get(&getContext(), 32);
+ }
+ 
+-// i64 can be used to index into aggregates like arrays
++// index type for aggregates like arrays; data-layout-aware (i32 on ILP32)
+ mlir::Type LLVMTypeConverter::indexType() const {
+-  return mlir::IntegerType::get(&getContext(), 64);
++  return mlir::IntegerType::get(&getContext(), getIndexTypeBitwidth());
+ }
+ 
+ // fir.type<name(p : TY'...){f : TY...}>  -->  llvm<"%name = { ty... }">
 diff --git a/flang/lib/Optimizer/Support/Utils.cpp b/flang/lib/Optimizer/Support/Utils.cpp
-index 2f33d89564..852f67ef33 100644
+index 2f33d89564..acc0c83b96 100644
 --- a/flang/lib/Optimizer/Support/Utils.cpp
 +++ b/flang/lib/Optimizer/Support/Utils.cpp
 @@ -65,7 +65,8 @@ mlir::LLVM::ConstantOp
@@ -273,7 +289,7 @@ index 2f33d89564..852f67ef33 100644
                        mlir::ConversionPatternRewriter &rewriter,
                        std::int64_t offset) {
 -  auto cattr = rewriter.getI64IntegerAttr(offset);
-+  // use target-width attr to avoid unrealized_conversion_cast on ILP32 targets
++  // use target-width attr to match ity (i32 on ILP32 targets)
 +  auto cattr = rewriter.getIntegerAttr(ity, offset);
    return mlir::LLVM::ConstantOp::create(rewriter, loc, ity, cattr);
  }
