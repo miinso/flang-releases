@@ -138,3 +138,10 @@ EMSDK is selected automatically from `emsdk-llvm-map.json` based on build LLVM m
 1. Finds latest LLVM patch version in `TRACKED_LLVM_MINOR`
 2. Opens a PR when `versions.env` needs an update
 3. Updates `LLVM_VERSION` and `LLVM_FORK_REF` using `flang-wasm32-llvmorg-{version}` convention
+
+## License
+
+The build scripts, workflows, and Dockerfiles in this repository are licensed under [Apache-2.0](LICENSE).
+
+- `patches/` contains diffs of [llvm-project](https://github.com/llvm/llvm-project) source and is accordingly under Apache-2.0 WITH LLVM-exception.
+- Release archives contain binaries built from llvm-project and bundle LLVM's `LICENSE.TXT`. Linux archives are statically linked against musl libc and bundle its MIT notice as `THIRD-PARTY-NOTICES-musl.txt`.

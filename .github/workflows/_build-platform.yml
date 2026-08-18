@@ -581,6 +581,11 @@ jobs:
           start="$(date +%s)"
           package_root="flang+llvm-${EFFECTIVE_VERSION}"
           mv install "$package_root"
+          cp llvm-project/llvm/LICENSE.TXT "$package_root/LICENSE.TXT"
+          if [ "${{ inputs.use_docker }}" = "true" ]; then
+            # musl-static builds embed musl libc; MIT requires its notice to ship with binaries
+            cp third_party/musl-COPYRIGHT.txt "$package_root/THIRD-PARTY-NOTICES-musl.txt"
+          fi
           package_file="${package_root}-${TARGET_TRIPLE}.${{ inputs.artifact_format }}"
           tar -czf "$package_file" "$package_root"
           echo "PACKAGE_FILE=$package_file" >> "$GITHUB_ENV"
@@ -594,6 +599,7 @@ jobs:
           $start = Get-Date
           $packageRoot = "flang+llvm-${{ env.EFFECTIVE_VERSION }}"
           Rename-Item -Path install -NewName $packageRoot
+          Copy-Item -Path "llvm-project\llvm\LICENSE.TXT" -Destination "$packageRoot\LICENSE.TXT"
           $packageFile = "$packageRoot-${{ inputs.target_triple }}.${{ inputs.artifact_format }}"
           Compress-Archive -Path $packageRoot -DestinationPath $packageFile -Force
           "PACKAGE_FILE=$packageFile" | Out-File -FilePath $env:GITHUB_ENV -Append
