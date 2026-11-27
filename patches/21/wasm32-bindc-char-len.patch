@@ -1,0 +1,128 @@
+diff --git a/flang/lib/Optimizer/CodeGen/TargetRewrite.cpp b/flang/lib/Optimizer/CodeGen/TargetRewrite.cpp
+index 05ebc46..0a4ecf1 100644
+--- a/flang/lib/Optimizer/CodeGen/TargetRewrite.cpp
++++ b/flang/lib/Optimizer/CodeGen/TargetRewrite.cpp
+@@ -54,7 +54,8 @@ struct FixupTy {
+     ReturnType,
+     Split,
+     Trailing,
+-    TrailingCharProc
++    TrailingCharProc,
++    CharNoLen
+   };
+ 
+   FixupTy(Codes code, std::size_t index, std::size_t second = 0)
+@@ -158,6 +159,25 @@ public:
+ 
+   mlir::ModuleOp getModule() { return getOperation(); }
+ 
++  /// A BIND(C) procedure has no hidden character length arguments. Passing
++  /// them anyway is harmless in native calling conventions, but on wasm the
++  /// caller's and the callee's signatures must match exactly.
++  bool dropsCharLen(mlir::Operation *op) {
++    return fir::hasBindcAttr(op) && fir::getTargetTriple(getModule()).isWasm();
++  }
++  template <typename A>
++  bool dropsCharLen(A callOp) {
++    if (dropsCharLen(callOp.getOperation()))
++      return true;
++    // Passes that rebuild a call may not carry its attributes over: the
++    // callee's declaration is authoritative for direct calls.
++    if constexpr (std::is_same_v<std::decay_t<A>, fir::CallOp>)
++      if (auto callee = callOp.getCallee())
++        if (auto *fn = getModule().lookupSymbol(*callee))
++          return dropsCharLen(fn);
++    return false;
++  }
++
+   template <typename Ty, typename Callback>
+   std::optional<std::function<mlir::Value(mlir::Operation *)>>
+   rewriteCallResultType(mlir::Location loc, mlir::Type originalResTy,
+@@ -447,6 +467,8 @@ public:
+                   std::get<fir::CodeGenSpecifics::Attributes>(e.value());
+               auto argTy = std::get<mlir::Type>(e.value());
+               if (attr.isAppend()) {
++                if (dropsCharLen(callOp))
++                  continue;
+                 trailingInTys.push_back(argTy);
+                 trailingOpers.push_back(unbox.getResult(idx));
+               } else {
+@@ -717,12 +739,15 @@ public:
+               newInTyAndAttrs.push_back(
+                   fir::CodeGenSpecifics::getTypeAndAttr(box));
+             } else {
++              auto *callee = getModule().lookupSymbol(addrOp.getSymbol());
++              const bool noLen = callee && dropsCharLen(callee);
+               for (auto &tup : specifics->boxcharArgumentType(box.getEleTy())) {
+                 auto attr = std::get<fir::CodeGenSpecifics::Attributes>(tup);
+                 auto argTy = std::get<mlir::Type>(tup);
+-                if (attr.isAppend())
+-                  trailingInTys.push_back(argTy);
+-                else
++                if (attr.isAppend()) {
++                  if (!noLen)
++                    trailingInTys.push_back(argTy);
++                } else
+                   newInTyAndAttrs.push_back(tup);
+               }
+             }
+@@ -917,6 +942,14 @@ public:
+               // Convert a CHARACTER argument type. This can involve separating
+               // the pointer and the LEN into two arguments and moving the LEN
+               // argument to the end of the arg list.
++              if (dropsCharLen(func.getOperation())) {
++                auto m = specifics->boxcharArgumentType(boxTy.getEleTy());
++                fixups.emplace_back(
++                    FixupTy::Codes::CharNoLen, newInTyAndAttrs.size(),
++                    std::get<mlir::Type>(m[1]).getIntOrFloatBitWidth());
++                newInTyAndAttrs.push_back(m[0]);
++                return;
++              }
+               for (auto &tup :
+                    specifics->boxcharArgumentType(boxTy.getEleTy())) {
+                 auto attr = std::get<fir::CodeGenSpecifics::Attributes>(tup);
+@@ -1122,6 +1155,22 @@ public:
+           func.getArgument(fixup.index + 1).replaceAllUsesWith(box);
+           func.front().eraseArgument(fixup.index + 1);
+         } break;
++        case FixupTy::Codes::CharNoLen: {
++          // BIND(C) character argument without a length argument: the
++          // address arrives in the original position and the length is the
++          // one an interoperable character has, 1.
++          auto newBufArg =
++              func.front().insertArgument(fixup.index, fixupType, loc);
++          auto boxTy = oldArgTys[fixup.index - offset];
++          rewriter->setInsertionPointToStart(&func.front());
++          auto lenTy = mlir::IntegerType::get(func.getContext(), fixup.second);
++          auto one = rewriter->create<mlir::arith::ConstantOp>(
++              loc, lenTy, mlir::IntegerAttr::get(lenTy, 1));
++          auto box =
++              rewriter->create<fir::EmboxCharOp>(loc, boxTy, newBufArg, one);
++          func.getArgument(fixup.index + 1).replaceAllUsesWith(box);
++          func.front().eraseArgument(fixup.index + 1);
++        } break;
+         case FixupTy::Codes::TrailingCharProc: {
+           // The FIR character procedure argument tuple must be split into a
+           // pair of distinct arguments. The first part of the pair appears in
+diff --git a/flang/lib/Optimizer/Transforms/AbstractResult.cpp b/flang/lib/Optimizer/Transforms/AbstractResult.cpp
+index 59e2eeb..d412fe5 100644
+--- a/flang/lib/Optimizer/Transforms/AbstractResult.cpp
++++ b/flang/lib/Optimizer/Transforms/AbstractResult.cpp
+@@ -157,6 +157,8 @@ public:
+         newOperands.append(op.getOperands().begin(), op.getOperands().end());
+         newOp = rewriter.create<fir::CallOp>(loc, *op.getCallee(),
+                                              newResultTypes, newOperands);
++        if (auto procAttrs = op.getProcedureAttrsAttr())
++          newOp->setAttr(op.getProcedureAttrsAttrName(), procAttrs);
+       } else {
+         // Indirect calls.
+         llvm::SmallVector<mlir::Type> newInputTypes;
+@@ -176,6 +178,8 @@ public:
+                            op.getOperands().end());
+         newOp = rewriter.create<fir::CallOp>(loc, mlir::SymbolRefAttr{},
+                                              newResultTypes, newOperands);
++        if (auto procAttrs = op.getProcedureAttrsAttr())
++          newOp->setAttr(op.getProcedureAttrsAttrName(), procAttrs);
+       }
+     }
+ 
