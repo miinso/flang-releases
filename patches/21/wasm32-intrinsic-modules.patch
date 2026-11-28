@@ -1,0 +1,120 @@
+diff --git a/flang/lib/Frontend/CompilerInvocation.cpp b/flang/lib/Frontend/CompilerInvocation.cpp
+index f55d866..8ab3402 100644
+--- a/flang/lib/Frontend/CompilerInvocation.cpp
++++ b/flang/lib/Frontend/CompilerInvocation.cpp
+@@ -1725,6 +1725,14 @@ void CompilerInvocation::setDefaultPredefinitions() {
+     fortranOptions.predefinitions.emplace_back("__aarch64__", "1");
+     fortranOptions.predefinitions.emplace_back("__aarch64", "1");
+     break;
++  case llvm::Triple::ArchType::wasm32:
++    fortranOptions.predefinitions.emplace_back("__wasm__", "1");
++    fortranOptions.predefinitions.emplace_back("__wasm32__", "1");
++    break;
++  case llvm::Triple::ArchType::wasm64:
++    fortranOptions.predefinitions.emplace_back("__wasm__", "1");
++    fortranOptions.predefinitions.emplace_back("__wasm64__", "1");
++    break;
+   }
+ }
+ 
+@@ -1759,6 +1767,14 @@ void CompilerInvocation::setFortranOpts() {
+       preprocessorOptions.searchDirectoriesFromIntrModPath.begin(),
+       preprocessorOptions.searchDirectoriesFromIntrModPath.end());
+ 
++  // The intrinsic modules built for a wasm target (C kinds and C pointer
++  // sizes differ from the host's) are in a directory named after its
++  // architecture; it is searched before the default one.
++  if (llvm::Triple targetTriple{llvm::Triple(this->targetOpts.triple)};
++      targetTriple.isWasm())
++    fortranOptions.intrinsicModuleDirectories.emplace_back(
++        getIntrinsicDir(getArgv0()) + targetTriple.getArchName().str() + "/");
++
+   //  Add the default intrinsic module directory
+   fortranOptions.intrinsicModuleDirectories.emplace_back(
+       getIntrinsicDir(getArgv0()));
+diff --git a/flang/module/__fortran_builtins.f90 b/flang/module/__fortran_builtins.f90
+index 4d134fa..631536e 100644
+--- a/flang/module/__fortran_builtins.f90
++++ b/flang/module/__fortran_builtins.f90
+@@ -33,13 +33,19 @@ module __fortran_builtins
+ 
+   intrinsic :: selected_int_kind
+   integer, parameter :: int64 = selected_int_kind(18)
++#ifdef __wasm32__
++  ! 32-bit addresses: C pointers are 4 bytes
++  integer, parameter :: addrKind = selected_int_kind(9)
++#else
++  integer, parameter :: addrKind = int64
++#endif
+ 
+   type, bind(c), public :: __builtin_c_ptr
+-    integer(kind=int64), private :: __address
++    integer(kind=addrKind), private :: __address
+   end type
+ 
+   type, bind(c), public :: __builtin_c_funptr
+-    integer(kind=int64), private :: __address
++    integer(kind=addrKind), private :: __address
+   end type
+ 
+   type, public :: __builtin_event_type
+diff --git a/flang/module/__fortran_type_info.f90 b/flang/module/__fortran_type_info.f90
+index 8dd27d6..e43c674 100644
+--- a/flang/module/__fortran_type_info.f90
++++ b/flang/module/__fortran_type_info.f90
+@@ -119,7 +119,9 @@ module __fortran_type_info
+     integer(1) :: isArgDescriptorSet
+     integer(1) :: isTypeBound ! binding index + 1, if any
+     integer(1) :: isArgContiguousSet
++#ifndef __wasm32__
+     integer(1) :: __padding0(4)
++#endif
+     type(__builtin_c_funptr) :: proc
+   end type
+ 
+diff --git a/flang/module/iso_c_binding.f90 b/flang/module/iso_c_binding.f90
+index 8e3f78c..7891321 100644
+--- a/flang/module/iso_c_binding.f90
++++ b/flang/module/iso_c_binding.f90
+@@ -43,10 +43,18 @@ module iso_c_binding
+   integer, parameter, public :: &
+     c_int = c_int32_t, &
+     c_short = c_int16_t, &
++#ifdef __wasm32__
++    c_long = c_int32_t, &
++#else
+     c_long = c_int64_t, &
++#endif
+     c_long_long = c_int64_t, &
+     c_signed_char = c_int8_t, &
++#ifdef __wasm32__
++    c_size_t = c_int32_t, &
++#else
+     c_size_t = kind(c_sizeof(1)), &
++#endif
+     ! Currently both gcc and clang define intmax_t to be 64 bit.
+     c_intmax_t = c_int64_t, &
+     c_intptr_t = c_size_t, &
+@@ -57,6 +65,8 @@ module iso_c_binding
+     c_int_least16_t = c_int16_t, &
+ #if defined(__linux__) && defined(__powerpc__)
+     c_int_fast16_t = c_long, &
++#elif defined(__wasm32__)
++    c_int_fast16_t = c_int32_t, &
+ #else
+     c_int_fast16_t = c_int16_t, &
+ #endif
+@@ -117,8 +127,12 @@ module iso_c_binding
+     c_unsigned_char = c_uint8_t, &
+     c_unsigned_short = c_uint16_t, &
+     c_unsigned = c_uint32_t, &
++#ifdef __wasm32__
++    c_unsigned_long = c_uint32_t, &
++#else
+     c_unsigned_long = c_uint64_t, &
+-    c_unsigned_long_long = c_unsigned_long, &
++#endif
++    c_unsigned_long_long = c_uint64_t, &
+ #if __powerpc__
+     c_uintmax_t = c_uint64_t
+ #else

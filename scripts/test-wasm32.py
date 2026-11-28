@@ -46,6 +46,81 @@ def find_native_flang_rt_dir(install_dir: Path) -> Path:
     raise FileNotFoundError(f"Could not find native flang_rt in {install_dir}")
 
 
+def has_target_sizes(llvm_project: Path) -> bool:
+    """True when the patch set that makes flang emit target sizes is applied
+    (descriptors, runtime call arguments, per-arch intrinsic modules)."""
+    src = llvm_project / "flang" / "module" / "iso_c_binding.f90"
+    return src.exists() and "__wasm32__" in src.read_text()
+
+
+# same order as flang/tools/f18/CMakeLists.txt
+WASM_MODULES = [
+    "__fortran_builtins", "__cuda_builtins", "__fortran_type_info",
+    "__fortran_ieee_exceptions", "iso_fortran_env_impl", "iso_fortran_env",
+    "ieee_exceptions", "ieee_arithmetic", "ieee_features", "iso_c_binding",
+    "__ppc_types", "__cuda_device", "cudadevice", "cooperative_groups",
+]
+CUDA_MODULES = {"__cuda_device", "cudadevice", "cooperative_groups"}
+
+
+def build_wasm_modules(flang: Path, llvm_project: Path, install_dir: Path, arch="wasm32") -> bool:
+    """Build the intrinsic modules for a wasm target into include/flang/<arch>.
+    flang looks there before include/flang when the target is wasm."""
+    triple = f"{arch}-unknown-emscripten"
+    out = install_dir / "include" / "flang" / arch
+    out.mkdir(parents=True, exist_ok=True)
+    for stale in out.glob("*.mod"):
+        stale.unlink()
+    for m in WASM_MODULES:
+        drv = f"-fc1 -triple {triple} -xcuda" if m in CUDA_MODULES else f"--target={triple}"
+        src = llvm_project / "flang" / "module" / f"{m}.f90"
+        if run(f'"{flang}" {drv} -cpp -fsyntax-only -module-dir "{out}" "{src}"').returncode != 0:
+            return False
+    # omp_lib: kinds derive from iso_c_binding, the source needs no change
+    omp = llvm_project / "openmp" / "runtime"
+    template = omp / "src" / "include" / "omp_lib.F90.var"
+    if template.exists():
+        cmake = (omp / "CMakeLists.txt").read_text()
+        version = {}
+        for key in ("MAJOR", "MINOR"):
+            found = re.search(r"set\(LIBOMP_VERSION_" + key + r" (\d+)", cmake)
+            version[key] = found.group(1) if found else "0"
+        # the build number comes from kmp_version.cpp, as in libomp_get_build_number()
+        found = re.search(r"#define KMP_VERSION_BUILD\s+(\d+)", (omp / "src" / "kmp_version.cpp").read_text())
+        text = template.read_text()
+        for key, value in {
+            "@LIBOMP_VERSION_MAJOR@": version["MAJOR"],
+            "@LIBOMP_VERSION_MINOR@": version["MINOR"],
+            "@LIBOMP_VERSION_BUILD@": found.group(1) if found else "0",
+            "@LIBOMP_BUILD_DATE@": "No_Timestamp",
+            "@LIBOMP_OMP_YEAR_MONTH@": "201611",
+        }.items():
+            text = text.replace(key, value)
+        with tempfile.TemporaryDirectory() as tmp:
+            f90 = Path(tmp) / "omp_lib.F90"
+            f90.write_text(text)
+            if run(f'"{flang}" --target={triple} -cpp -fsyntax-only -module-dir "{out}" "{f90}"').returncode != 0:
+                return False
+    print(f"{out}: {len(list(out.glob('*.mod')))} modules")
+    return True
+
+
+# output of scripts/wasm32-e2e.f90 on wasm32
+E2E_EXPECTED = """\
+alloc    3   4  24
+bounds  0  0  2  3
+sect    4  2  2
+source 7 7 7  3.5
+bound  21.0
+final  1
+defer wasm!!!  7
+cstr    5 4
+common 7
+nml   &SMALL NI= 5/
+inq    F
+"""
+
+
 def find_script_dir() -> Path:
     """Find the directory containing this script."""
     return Path(__file__).resolve().parent
@@ -115,6 +190,16 @@ def main():
             sys.exit(1)
 
         print(f"PASS: Built {wasm32_runtime}")
+
+    target_sizes = has_target_sizes(llvm_project)
+    if target_sizes and not args.skip_build:
+        print("\n" + "=" * 60)
+        print("Step 1b: Building wasm32 intrinsic modules")
+        print("=" * 60)
+        if not build_wasm_modules(flang, llvm_project, install_dir):
+            print("FAIL: Failed to build wasm32 intrinsic modules")
+            sys.exit(1)
+        print("PASS: Built wasm32 intrinsic modules")
 
     # Step 2: Test IR output
     if not args.skip_test:
@@ -344,6 +429,35 @@ end subroutine
             else:
                 print("FAIL: Expected 'Hello from wasm32!' in output")
                 sys.exit(1)
+
+            # descriptors, type-bound calls, finalization, common blocks,
+            # namelist, inquire, bind(c) character arguments
+            if target_sizes:
+                e2e_o = tmpdir / "e2e.o"
+                e2e_js = tmpdir / "e2e.js"
+                e2e_f90 = script_dir / "wasm32-e2e.f90"
+                result = run(f'"{flang}" --target=wasm32-unknown-emscripten -J "{tmpdir}" -c "{e2e_f90}" -o "{e2e_o}"')
+                if result.returncode != 0:
+                    print("FAIL: Failed to compile wasm32-e2e.f90")
+                    sys.exit(1)
+                result = run(f'emcc "{e2e_o}" "{wasm32_runtime}" -sEXIT_RUNTIME=1 -o "{e2e_js}"')
+                if result.returncode != 0:
+                    print("FAIL: Failed to link wasm32-e2e")
+                    sys.exit(1)
+                if "signature mismatch" in result.stderr:
+                    print("FAIL: function signature mismatch between flang objects and the wasm32 runtime")
+                    sys.exit(1)
+                result = run(f'node "{e2e_js}"')
+                got = [line.rstrip() for line in result.stdout.splitlines()]
+                want = [line.rstrip() for line in E2E_EXPECTED.splitlines()]
+                if result.returncode != 0 or got != want:
+                    print("FAIL: wasm32-e2e output differs")
+                    for g, w in zip(got + [""] * len(want), want):
+                        if g != w:
+                            print(f"  got:  {g}")
+                            print(f"  want: {w}")
+                    sys.exit(1)
+                print("PASS: wasm32-e2e ran with the expected output")
 
     # Step 4: Install wasm32 runtime
     if not args.skip_install:

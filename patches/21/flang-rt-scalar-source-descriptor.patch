@@ -1,0 +1,17 @@
+diff --git a/flang-rt/lib/runtime/assign.cpp b/flang-rt/lib/runtime/assign.cpp
+index d642ed5..b8c2efc 100644
+--- a/flang-rt/lib/runtime/assign.cpp
++++ b/flang-rt/lib/runtime/assign.cpp
+@@ -732,8 +732,10 @@ RT_API_ATTRS void DoFromSourceAssign(Descriptor &alloc,
+     if (allocDerived) {
+       for (std::size_t n{alloc.InlineElements()}; n-- > 0;
+           alloc.IncrementSubscripts(allocAt)) {
+-        Descriptor allocElement{*Descriptor::Create(*allocDerived,
+-            reinterpret_cast<void *>(alloc.Element<char>(allocAt)), 0)};
++        StaticDescriptor<0, true /*addendum*/> staticElement;
++        Descriptor &allocElement{staticElement.descriptor()};
++        allocElement.Establish(*allocDerived,
++            reinterpret_cast<void *>(alloc.Element<char>(allocAt)), 0);
+         Assign(allocElement, source, terminator, NoAssignFlags, memmoveFct);
+       }
+     } else { // intrinsic type

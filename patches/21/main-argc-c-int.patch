@@ -1,0 +1,15 @@
+diff --git a/flang/lib/Optimizer/Builder/Runtime/Main.cpp b/flang/lib/Optimizer/Builder/Runtime/Main.cpp
+index 9737448..9abf367 100644
+--- a/flang/lib/Optimizer/Builder/Runtime/Main.cpp
++++ b/flang/lib/Optimizer/Builder/Runtime/Main.cpp
+@@ -26,7 +26,9 @@ void fir::runtime::genMain(
+     const std::vector<Fortran::lower::EnvironmentDefault> &defs,
+     bool initCuda) {
+   auto *context = builder.getContext();
+-  auto argcTy = builder.getDefaultIntegerType();
++  // C int: main's argc and result, and ProgramStart's argc. Not the default
++  // INTEGER kind, which -fdefault-integer-8 changes.
++  auto argcTy = builder.getIntegerType(8 * sizeof(int));
+   auto ptrTy = mlir::LLVM::LLVMPointerType::get(context);
+ 
+   // void ProgramStart(int argc, char** argv, char** envp,

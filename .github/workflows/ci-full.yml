@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/_build-platform.yml
     with:
       platform_id: windows-x86_64
-      runner: windows-latest
+      runner: windows-2022
       target_triple: x86_64-pc-windows-msvc
       cmake_preset: windows-x86_64
       emsdk_host: win
